@@ -1,11 +1,24 @@
 // src/pages/auth/Login.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Box, Button, Paper, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Paper,
+  TextField,
+  Typography,
+  CircularProgress,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
 
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+
+import Swal from "sweetalert2";
 
 import desktopBg from "../../assets/auth-bg-desktop.png";
 import mobileBg from "../../assets/auth-bg-mobile.png";
@@ -18,16 +31,46 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const validateEmail = (value) => {
+    if (!value.trim()) {
+      return "Email is required";
+    }
 
-    setErrorMessage("");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!email || !password) {
-      setErrorMessage("Email and password are required");
+    if (!emailRegex.test(value)) {
+      return "Enter a valid email address";
+    }
+
+    return "";
+  };
+
+  const validatePassword = (value) => {
+    if (!value.trim()) {
+      return "Password is required";
+    }
+
+    if (value.length < 6) {
+      return "Password must be at least 6 characters";
+    }
+
+    return "";
+  };
+
+  const handleLogin = async () => {
+    const emailValidationMessage = validateEmail(email);
+    const passwordValidationMessage = validatePassword(password);
+
+    setEmailError(emailValidationMessage);
+    setPasswordError(passwordValidationMessage);
+
+    if (emailValidationMessage || passwordValidationMessage) {
       return;
     }
 
@@ -42,13 +85,25 @@ function Login() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.data.user));
 
-      navigate("/shop");
+      Swal.fire({
+        icon: "success",
+        title: "Login Successful",
+        text: "Welcome back!",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#28DF99",
+      }).then(() => {
+        navigate("/shop");
+      });
     } catch (error) {
       console.log(error);
 
-      setErrorMessage(
-        error.response?.data?.message || "Login failed. Please try again."
-      );
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: error.response?.data?.message || "Invalid email or password",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#28DF99",
+      });
     } finally {
       setLoading(false);
     }
@@ -101,32 +156,32 @@ function Login() {
             </Typography>
           </Box>
 
-          {errorMessage && (
-            <Typography
-              textAlign="center"
-              sx={{
-                mb: 2.5,
-                color: "#dc2626",
-                fontWeight: 700,
-                fontSize: "14px",
-              }}
-            >
-              {errorMessage}
-            </Typography>
-          )}
-
-          <Box component="form" onSubmit={handleLogin}>
+          {/* No form here */}
+          <Box>
             <TextField
               fullWidth
               label="Email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+
+                if (emailError) {
+                  setEmailError("");
+                }
+              }}
+              error={!!emailError}
+              helperText={emailError}
               sx={{
                 mb: 3,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "16px",
                   backgroundColor: "rgba(255,255,255,0.35)",
+                },
+                "& .MuiFormHelperText-root": {
+                  color: "#dc2626",
+                  fontWeight: 600,
+                  ml: 1,
                 },
               }}
             />
@@ -134,24 +189,58 @@ function Login() {
             <TextField
               fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+
+                if (passwordError) {
+                  setPasswordError("");
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleLogin();
+                }
+              }}
+              error={!!passwordError}
+              helperText={passwordError}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        onMouseDown={(e) => e.preventDefault()}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
               sx={{
                 mb: 3.5,
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "16px",
                   backgroundColor: "rgba(255,255,255,0.35)",
                 },
+                "& .MuiFormHelperText-root": {
+                  color: "#dc2626",
+                  fontWeight: 600,
+                  ml: 1,
+                },
               }}
             />
 
             <Button
               fullWidth
-              type="submit"
               variant="contained"
               size="large"
               disabled={loading}
+              onClick={handleLogin}
               sx={{
                 textTransform: "none",
                 fontWeight: 900,
@@ -160,7 +249,11 @@ function Login() {
                 boxShadow: "none",
               }}
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? (
+                <CircularProgress size={24} sx={{ color: "white" }} />
+              ) : (
+                "Login"
+              )}
             </Button>
           </Box>
 

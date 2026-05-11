@@ -12,6 +12,7 @@ import Products from "./pages/public/Products";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import VerifyOtp from "./pages/auth/VerifyOtp"
 
 function App() {
   const location = useLocation();
@@ -36,6 +37,7 @@ function App() {
           {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
         </Routes>
       </main>
 
