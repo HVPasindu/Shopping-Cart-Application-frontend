@@ -1,6 +1,6 @@
 // src/components/Navbar.jsx
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import {
   AppBar,
@@ -22,8 +22,15 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 
+import Swal from "sweetalert2";
+
 function Navbar() {
+  const navigate = useNavigate();
+
   const [openMenu, setOpenMenu] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    Boolean(localStorage.getItem("token"))
+  );
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -31,6 +38,37 @@ function Navbar() {
     { name: "Shop", path: "/shop" },
     { name: "Contact", path: "/contact" },
   ];
+
+  const handleLogout = () => {
+    Swal.fire({
+      icon: "warning",
+      title: "Logout?",
+      text: "Are you sure you want to logout?",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Logout",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#28DF99",
+      cancelButtonColor: "#6b7280",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        setIsLoggedIn(false);
+        setOpenMenu(false);
+
+        Swal.fire({
+          icon: "success",
+          title: "Logged Out",
+          text: "You have been logged out successfully.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#28DF99",
+        }).then(() => {
+          navigate("/");
+        });
+      }
+    });
+  };
 
   return (
     <>
@@ -93,19 +131,34 @@ function Navbar() {
                 </Button>
               ))}
 
-              <Button
-                component={Link}
-                to="/login"
-                variant="contained"
-                sx={{
-                  textTransform: "none",
-                  fontWeight: 700,
-                  boxShadow: "none",
-                  ml: 1,
-                }}
-              >
-                Login
-              </Button>
+              {isLoggedIn ? (
+                <Button
+                  onClick={handleLogout}
+                  variant="contained"
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    boxShadow: "none",
+                    ml: 1,
+                  }}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <Button
+                  component={Link}
+                  to="/login"
+                  variant="contained"
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 700,
+                    boxShadow: "none",
+                    ml: 1,
+                  }}
+                >
+                  Login
+                </Button>
+              )}
             </Box>
 
             {/* Mobile Burger Menu */}
@@ -150,9 +203,7 @@ function Navbar() {
               <Box className="flex items-center gap-2">
                 <ShoppingCartIcon color="primary" />
 
-                <Typography fontWeight={700}>
-                  Shopping Cart
-                </Typography>
+                <Typography fontWeight={700}>Shopping Cart</Typography>
               </Box>
             </Link>
 
@@ -193,22 +244,37 @@ function Navbar() {
             ))}
           </List>
 
-          {/* Login Button */}
+          {/* Login / Logout Button */}
           <Box sx={{ px: 2, mt: 1 }}>
-            <Button
-              component={Link}
-              to="/login"
-              onClick={() => setOpenMenu(false)}
-              variant="contained"
-              fullWidth
-              sx={{
-                textTransform: "none",
-                fontWeight: 700,
-                boxShadow: "none",
-              }}
-            >
-              Login
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                onClick={handleLogout}
+                variant="contained"
+                fullWidth
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 700,
+                  boxShadow: "none",
+                }}
+              >
+                Logout
+              </Button>
+            ) : (
+              <Button
+                component={Link}
+                to="/login"
+                onClick={() => setOpenMenu(false)}
+                variant="contained"
+                fullWidth
+                sx={{
+                  textTransform: "none",
+                  fontWeight: 700,
+                  boxShadow: "none",
+                }}
+              >
+                Login
+              </Button>
+            )}
           </Box>
         </Box>
       </Drawer>

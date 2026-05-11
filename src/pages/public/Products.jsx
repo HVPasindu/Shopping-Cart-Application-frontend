@@ -11,6 +11,9 @@ import {
   Box,
   Chip,
   IconButton,
+  FormControl,
+  Select,
+  MenuItem,
 } from "@mui/material";
 
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
@@ -186,6 +189,7 @@ function Products() {
   const [category, setCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const getUserRole = () => {
     const user = localStorage.getItem("user");
@@ -210,9 +214,13 @@ function Products() {
 
       if (isAdmin) {
         const categoryRes = await API.get(`/categories/admin/${categoryId}`);
-        const productsRes = await API.get(
-          `/products/admin/all?category_id=${categoryId}`
-        );
+
+        const productsUrl =
+          statusFilter === "all"
+            ? `/products/admin/all?category_id=${categoryId}`
+            : `/products/admin/all?category_id=${categoryId}&status=${statusFilter}`;
+
+        const productsRes = await API.get(productsUrl);
 
         setCategory(categoryRes.data.data.category);
         setProducts(productsRes.data.data.products);
@@ -231,7 +239,7 @@ function Products() {
 
   useEffect(() => {
     getProducts();
-  }, [categoryId]);
+  }, [categoryId, statusFilter]);
 
   if (loading) {
     return (
@@ -286,6 +294,33 @@ function Products() {
           >
             Browse available products in this category.
           </Typography>
+
+          {/* Admin only status filter */}
+          {isAdmin && (
+            <Box className="mt-6 flex justify-center">
+              <FormControl
+                size="small"
+                sx={{
+                  minWidth: 180,
+                  backgroundColor: "white",
+                  borderRadius: "14px",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "14px",
+                    fontWeight: 700,
+                  },
+                }}
+              >
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="all">All Products</MenuItem>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="inactive">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          )}
         </Box>
 
         {products.length === 0 ? (
