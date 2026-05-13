@@ -92,7 +92,7 @@ function Login() {
         confirmButtonText: "OK",
         confirmButtonColor: "#28DF99",
       }).then(() => {
-        navigate("/shop");
+        navigate("/customer/profile");
       });
     } catch (error) {
       console.log(error);

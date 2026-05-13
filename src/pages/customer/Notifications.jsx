@@ -1,8 +1,8 @@
-// src/pages/customer/Cart.jsx
+// src/pages/customer/Notifications.jsx
 import { Box, Paper, Typography } from "@mui/material";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 
-function Cart() {
+function Notifications() {
   return (
     <Paper
       elevation={0}
@@ -18,8 +18,8 @@ function Cart() {
       }}
     >
       <Box className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#e6fdf4] text-[#16a66d] font-bold text-sm mb-3">
-        <ShoppingCartIcon fontSize="small" />
-        My Cart
+        <NotificationsIcon fontSize="small" />
+        Notifications
       </Box>
 
       <Typography
@@ -32,14 +32,14 @@ function Cart() {
           lineHeight: 1.1,
         }}
       >
-        Cart
+        Notifications
       </Typography>
 
       <Typography color="text.secondary" className="mt-2">
-        Cart details will be added here later.
+        Your notifications will be added here later.
       </Typography>
     </Paper>
   );
 }
 
-export default Cart;
+export default Notifications;

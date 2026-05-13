@@ -21,6 +21,7 @@ import {
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 import Swal from "sweetalert2";
 
@@ -31,6 +32,24 @@ function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     Boolean(localStorage.getItem("token"))
   );
+
+  const getUserRole = () => {
+    const user = localStorage.getItem("user");
+
+    if (!user) {
+      return null;
+    }
+
+    try {
+      const parsedUser = JSON.parse(user);
+      return parsedUser.role;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const userRole = getUserRole();
+  const isCustomer = isLoggedIn && userRole === "customer";
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -131,6 +150,27 @@ function Navbar() {
                 </Button>
               ))}
 
+              {/* Customer only My Account button */}
+              {isCustomer && (
+                <Button
+                  component={Link}
+                  to="/customer/profile"
+                  startIcon={<AccountCircleIcon />}
+                  sx={{
+                    color: "text.primary",
+                    textTransform: "none",
+                    fontWeight: 700,
+                    ml: 1,
+                    "&:hover": {
+                      backgroundColor: "#e6fdf4",
+                      color: "primary.main",
+                    },
+                  }}
+                >
+                  My Account
+                </Button>
+              )}
+
               {isLoggedIn ? (
                 <Button
                   onClick={handleLogout}
@@ -179,11 +219,7 @@ function Navbar() {
       </AppBar>
 
       {/* Mobile Drawer */}
-      <Drawer
-        anchor="left"
-        open={openMenu}
-        onClose={() => setOpenMenu(false)}
-      >
+      <Drawer anchor="left" open={openMenu} onClose={() => setOpenMenu(false)}>
         <Box sx={{ width: 260 }}>
           {/* Drawer Header */}
           <Box
@@ -242,6 +278,36 @@ function Navbar() {
                 </ListItemButton>
               </ListItem>
             ))}
+
+            {/* Mobile customer only My Account */}
+            {isCustomer && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  component={NavLink}
+                  to="/customer/profile"
+                  onClick={() => setOpenMenu(false)}
+                  sx={{
+                    borderRadius: "12px",
+                    mb: 0.5,
+                    color: "text.primary",
+
+                    "&.active": {
+                      backgroundColor: "#e6fdf4",
+                      color: "primary.main",
+                    },
+                  }}
+                >
+                  <AccountCircleIcon fontSize="small" sx={{ mr: 1.5 }} />
+
+                  <ListItemText
+                    primary="My Account"
+                    primaryTypographyProps={{
+                      fontWeight: 600,
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )}
           </List>
 
           {/* Login / Logout Button */}
