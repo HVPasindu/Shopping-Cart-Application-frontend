@@ -16,6 +16,7 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
+  Tooltip,
 } from "@mui/material";
 
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
@@ -199,6 +200,28 @@ function Navbar() {
                   Login
                 </Button>
               )}
+
+              {/* Cart icon - right side last */}
+              {isCustomer && (
+                <Tooltip title="My Cart">
+                  <IconButton
+                    component={Link}
+                    to="/customer/cart"
+                    sx={{
+                      ml: 1,
+                      backgroundColor: "#e6fdf4",
+                      color: "primary.main",
+                      width: 44,
+                      height: 44,
+                      "&:hover": {
+                        backgroundColor: "#d1fae5",
+                      },
+                    }}
+                  >
+                    <ShoppingCartIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
             </Box>
 
             {/* Mobile Burger Menu */}
@@ -278,6 +301,36 @@ function Navbar() {
                 </ListItemButton>
               </ListItem>
             ))}
+
+            {/* Mobile customer only My Cart */}
+            {isCustomer && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  component={NavLink}
+                  to="/customer/cart"
+                  onClick={() => setOpenMenu(false)}
+                  sx={{
+                    borderRadius: "12px",
+                    mb: 0.5,
+                    color: "text.primary",
+
+                    "&.active": {
+                      backgroundColor: "#e6fdf4",
+                      color: "primary.main",
+                    },
+                  }}
+                >
+                  <ShoppingCartIcon fontSize="small" sx={{ mr: 1.5 }} />
+
+                  <ListItemText
+                    primary="My Cart"
+                    primaryTypographyProps={{
+                      fontWeight: 600,
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )}
 
             {/* Mobile customer only My Account */}
             {isCustomer && (
