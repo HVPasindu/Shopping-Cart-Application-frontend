@@ -1,5 +1,6 @@
 // src/pages/customer/Cart.jsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Paper,
@@ -20,6 +21,8 @@ import Swal from "sweetalert2";
 import API from "../../services/api";
 
 function Cart() {
+  const navigate = useNavigate();
+
   const [cart, setCart] = useState(null);
   const [items, setItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -74,8 +77,7 @@ function Cart() {
         icon: "error",
         title: "Update Failed",
         text:
-          error.response?.data?.message ||
-          "Could not update item quantity.",
+          error.response?.data?.message || "Could not update item quantity.",
         confirmButtonColor: "#28DF99",
       });
     } finally {
@@ -205,7 +207,6 @@ function Cart() {
         boxShadow: "0 14px 35px rgba(0,0,0,0.06)",
       }}
     >
-      {/* Header */}
       <Box className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <Box>
           <Box className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#e6fdf4] text-[#16a66d] font-bold text-sm mb-3">
@@ -298,7 +299,6 @@ function Cart() {
                     backgroundColor: hasIssue ? "#fff7ed" : "#f7fbff",
                   }}
                 >
-                  {/* Product image */}
                   <Box
                     sx={{
                       width: {
@@ -333,7 +333,6 @@ function Cart() {
                     )}
                   </Box>
 
-                  {/* Details */}
                   <Box className="flex-1">
                     <Box className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                       <Box>
@@ -455,7 +454,6 @@ function Cart() {
             })}
           </Box>
 
-          {/* Total */}
           <Box
             className="mt-6 p-5 rounded-[24px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
             sx={{
@@ -476,6 +474,7 @@ function Cart() {
             <Button
               variant="contained"
               disabled={items.length === 0}
+              onClick={() => navigate("/customer/orders")}
               sx={{
                 textTransform: "none",
                 fontWeight: 900,
