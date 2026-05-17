@@ -1,8 +1,8 @@
-// src/pages/customer/Orders.jsx
+// src/pages/customer/Notifications.jsx
 import { Box, Paper, Typography } from "@mui/material";
-import HistoryIcon from "@mui/icons-material/History";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 
-function Orders() {
+function Notifications() {
   return (
     <Paper
       elevation={0}
@@ -18,8 +18,8 @@ function Orders() {
       }}
     >
       <Box className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#e6fdf4] text-[#16a66d] font-bold text-sm mb-3">
-        <HistoryIcon fontSize="small" />
-        Order History
+        <NotificationsIcon fontSize="small" />
+        Notifications
       </Box>
 
       <Typography
@@ -32,14 +32,14 @@ function Orders() {
           lineHeight: 1.1,
         }}
       >
-        Order History
+        Notifications
       </Typography>
 
       <Typography color="text.secondary" className="mt-2">
-        Your order history will be added here later.
+        Your notifications will be added here later.
       </Typography>
     </Paper>
   );
 }
 
-export default Orders;
+export default Notifications;
