@@ -1,6 +1,6 @@
 // src/pages/public/Products.jsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Container,
   Typography,
@@ -20,6 +20,9 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
+
+import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
 import API from "../../services/api";
 
@@ -184,6 +187,7 @@ function ProductImageSlider({ images = [], productName }) {
 }
 
 function Products() {
+  const navigate = useNavigate();
   const { categoryId } = useParams();
 
   const [category, setCategory] = useState(null);
@@ -240,6 +244,72 @@ function Products() {
   useEffect(() => {
     getProducts();
   }, [categoryId, statusFilter]);
+
+  const handleAddToCart = async (productId) => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+
+    if (!token || !user) {
+      Swal.fire({
+        icon: "warning",
+        title: "You must login",
+        text: "You need to login before adding products to your cart.",
+        confirmButtonText: "Go to Login",
+        confirmButtonColor: "#28DF99",
+      }).then(() => {
+        navigate("/login");
+      });
+
+      return;
+    }
+
+    let parsedUser;
+
+    try {
+      parsedUser = JSON.parse(user);
+    } catch (error) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      Swal.fire({
+        icon: "warning",
+        title: "Login Required",
+        text: "Please login again before adding products to your cart.",
+        confirmButtonText: "Go to Login",
+        confirmButtonColor: "#28DF99",
+      }).then(() => {
+        navigate("/login");
+      });
+
+      return;
+    }
+
+    if (parsedUser.role !== "customer") {
+      Swal.fire({
+        icon: "warning",
+        title: "Customer Only",
+        text: "Only customers can add products to cart.",
+        confirmButtonColor: "#28DF99",
+      });
+
+      return;
+    }
+
+    try {
+      await API.post("/cart/add", {
+        product_id: productId,
+        quantity: 1,
+      });
+
+      toast.success("Product added to cart successfully.");
+    } catch (error) {
+      console.log(error);
+
+      toast.error(
+        error.response?.data?.message || "Could not add this product to cart."
+      );
+    }
+  };
 
   if (loading) {
     return (
@@ -452,6 +522,7 @@ function Products() {
                     variant="contained"
                     fullWidth
                     startIcon={<ShoppingCartIcon />}
+                    onClick={() => handleAddToCart(product.id)}
                     sx={{
                       textTransform: "none",
                       fontWeight: 900,
