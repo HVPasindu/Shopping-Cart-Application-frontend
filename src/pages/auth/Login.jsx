@@ -82,8 +82,10 @@ function Login() {
         password,
       });
 
+      const user = res.data.data.user;
+
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.data.user));
+      localStorage.setItem("user", JSON.stringify(user));
 
       Swal.fire({
         icon: "success",
@@ -92,7 +94,11 @@ function Login() {
         confirmButtonText: "OK",
         confirmButtonColor: "#28DF99",
       }).then(() => {
-        navigate("/customer/profile");
+        if (user.role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/customer/profile");
+        }
       });
     } catch (error) {
       console.log(error);
