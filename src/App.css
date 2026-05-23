@@ -1,0 +1,4 @@
+/* SweetAlert popup එක MUI Dialog එකට උඩින් පෙන්වන්න */
+.swal2-container {
+  z-index: 99999 !important;
+}

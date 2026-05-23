@@ -21,6 +21,14 @@ import Cart from "./pages/customer/Cart";
 import Orders from "./pages/customer/Orders";
 import Notifications from "./pages/customer/Notifications";
 
+import AdminLayout from "./pages/admin/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import ManageCategories from "./pages/admin/ManageCategories";
+import ManageProducts from "./pages/admin/ManageProducts";
+import ManageOrders from "./pages/admin/ManageOrders";
+import ManageUsers from "./pages/admin/ManageUsers";
+import ManageAdmins from "./pages/admin/ManageAdmins";
+
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 function App() {
@@ -61,6 +69,22 @@ function App() {
               <Route path="cart" element={<Cart />} />
               <Route path="orders" element={<Orders />} />
               <Route path="notifications" element={<Notifications />} />
+            </Route>
+          </Route>
+
+          {/* Admin protected routes */}
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route
+                index
+                element={<Navigate to="/admin/dashboard" replace />}
+              />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="categories" element={<ManageCategories />} />
+              <Route path="products" element={<ManageProducts />} />
+              <Route path="orders" element={<ManageOrders />} />
+              <Route path="users" element={<ManageUsers />} />
+              <Route path="admins" element={<ManageAdmins />} />
             </Route>
           </Route>
         </Routes>

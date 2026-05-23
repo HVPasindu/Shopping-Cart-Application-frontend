@@ -23,6 +23,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 import Swal from "sweetalert2";
 
@@ -50,7 +51,9 @@ function Navbar() {
   };
 
   const userRole = getUserRole();
+
   const isCustomer = isLoggedIn && userRole === "customer";
+  const isAdmin = isLoggedIn && userRole === "admin";
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -151,6 +154,27 @@ function Navbar() {
                 </Button>
               ))}
 
+              {/* Admin only dashboard button */}
+              {isAdmin && (
+                <Button
+                  component={Link}
+                  to="/admin/dashboard"
+                  startIcon={<AdminPanelSettingsIcon />}
+                  sx={{
+                    color: "text.primary",
+                    textTransform: "none",
+                    fontWeight: 700,
+                    ml: 1,
+                    "&:hover": {
+                      backgroundColor: "#e6fdf4",
+                      color: "primary.main",
+                    },
+                  }}
+                >
+                  Admin Dashboard
+                </Button>
+              )}
+
               {/* Customer only My Account button */}
               {isCustomer && (
                 <Button
@@ -201,7 +225,7 @@ function Navbar() {
                 </Button>
               )}
 
-              {/* Cart icon - right side last */}
+              {/* Customer only cart icon - right side last */}
               {isCustomer && (
                 <Tooltip title="My Cart">
                   <IconButton
@@ -301,6 +325,36 @@ function Navbar() {
                 </ListItemButton>
               </ListItem>
             ))}
+
+            {/* Mobile admin only dashboard */}
+            {isAdmin && (
+              <ListItem disablePadding>
+                <ListItemButton
+                  component={NavLink}
+                  to="/admin/dashboard"
+                  onClick={() => setOpenMenu(false)}
+                  sx={{
+                    borderRadius: "12px",
+                    mb: 0.5,
+                    color: "text.primary",
+
+                    "&.active": {
+                      backgroundColor: "#e6fdf4",
+                      color: "primary.main",
+                    },
+                  }}
+                >
+                  <AdminPanelSettingsIcon fontSize="small" sx={{ mr: 1.5 }} />
+
+                  <ListItemText
+                    primary="Admin Dashboard"
+                    primaryTypographyProps={{
+                      fontWeight: 600,
+                    }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )}
 
             {/* Mobile customer only My Cart */}
             {isCustomer && (
