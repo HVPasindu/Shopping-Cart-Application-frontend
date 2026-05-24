@@ -64,9 +64,7 @@ function ManageCategories() {
       Swal.fire({
         icon: "error",
         title: "Categories Load Failed",
-        text:
-          error.response?.data?.message ||
-          "Could not load categories.",
+        text: error.response?.data?.message || "Could not load categories.",
         confirmButtonColor: "#28DF99",
       });
     } finally {
@@ -80,23 +78,33 @@ function ManageCategories() {
 
   const openAddDialog = () => {
     setEditingCategory(null);
+
     setFormData({
       name: "",
       description: "",
       image: null,
     });
-    setErrors({ name: "" });
+
+    setErrors({
+      name: "",
+    });
+
     setOpenDialog(true);
   };
 
   const openEditDialog = (category) => {
     setEditingCategory(category);
+
     setFormData({
       name: category.name || "",
       description: category.description || "",
       image: null,
     });
-    setErrors({ name: "" });
+
+    setErrors({
+      name: "",
+    });
+
     setOpenDialog(true);
   };
 
@@ -107,12 +115,16 @@ function ManageCategories() {
 
     setOpenDialog(false);
     setEditingCategory(null);
+
     setFormData({
       name: "",
       description: "",
       image: null,
     });
-    setErrors({ name: "" });
+
+    setErrors({
+      name: "",
+    });
   };
 
   const handleInputChange = (field, value) => {
@@ -184,9 +196,7 @@ function ManageCategories() {
       Swal.fire({
         icon: "error",
         title: "Save Failed",
-        text:
-          error.response?.data?.message ||
-          "Could not save category.",
+        text: error.response?.data?.message || "Could not save category.",
         confirmButtonColor: "#28DF99",
       });
     } finally {
@@ -230,8 +240,7 @@ function ManageCategories() {
         icon: "error",
         title: "Status Update Failed",
         text:
-          error.response?.data?.message ||
-          "Could not update category status.",
+          error.response?.data?.message || "Could not update category status.",
         confirmButtonColor: "#28DF99",
       });
     }
@@ -270,9 +279,7 @@ function ManageCategories() {
       Swal.fire({
         icon: "error",
         title: "Delete Failed",
-        text:
-          error.response?.data?.message ||
-          "Could not delete category.",
+        text: error.response?.data?.message || "Could not delete category.",
         confirmButtonColor: "#28DF99",
       });
     }
@@ -393,8 +400,8 @@ function ManageCategories() {
                   lineHeight: 1.7,
                 }}
               >
-                Add new categories, update category details, change active status,
-                or delete categories.
+                Add new categories, update category details, change active
+                status, or delete categories.
               </Typography>
             </Box>
 
@@ -498,7 +505,14 @@ function ManageCategories() {
             </Box>
           </Box>
         ) : (
-          <Box className="flex flex-wrap gap-5">
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 2.5,
+              width: "100%",
+            }}
+          >
             {categories.map((category) => {
               const statusStyle = getStatusStyle(category.status);
 
@@ -508,13 +522,17 @@ function ManageCategories() {
                   sx={{
                     width: {
                       xs: "100%",
-                      md: "calc(50% - 10px)",
+                      lg: "calc(50% - 10px)",
                     },
-                    p: 3,
+                    p: {
+                      xs: 2,
+                      sm: 3,
+                    },
                     borderRadius: "26px",
                     backgroundColor: "#f7fbff",
                     border: "1px solid #e5e7eb",
                     overflow: "hidden",
+                    minWidth: 0,
                     transition: "0.25s",
                     "&:hover": {
                       backgroundColor: "#ecfdf5",
@@ -530,7 +548,10 @@ function ManageCategories() {
                   <Box
                     sx={{
                       width: "100%",
-                      height: 210,
+                      height: {
+                        xs: 190,
+                        sm: 210,
+                      },
                       borderRadius: "22px",
                       overflow: "hidden",
                       backgroundColor: "#e6fdf4",
@@ -552,14 +573,34 @@ function ManageCategories() {
                     ) : (
                       <Box className="w-full h-full flex items-center justify-center">
                         <ImageIcon
-                          sx={{ fontSize: 70, color: "primary.main" }}
+                          sx={{
+                            fontSize: 70,
+                            color: "primary.main",
+                          }}
                         />
                       </Box>
                     )}
                   </Box>
 
-                  <Box className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    <Box sx={{ minWidth: 0 }}>
+                  {/* Category top info */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: {
+                        xs: "column",
+                        sm: "row",
+                      },
+                      alignItems: {
+                        xs: "flex-start",
+                        sm: "flex-start",
+                      },
+                      justifyContent: "space-between",
+                      gap: 2,
+                      width: "100%",
+                      minWidth: 0,
+                    }}
+                  >
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
                       <Typography
                         fontWeight={900}
                         fontSize={22}
@@ -591,32 +632,76 @@ function ManageCategories() {
                         backgroundColor: statusStyle.bg,
                         color: statusStyle.color,
                         flexShrink: 0,
+                        alignSelf: {
+                          xs: "flex-start",
+                          sm: "flex-start",
+                        },
                       }}
                     />
                   </Box>
 
+                  {/* Status and actions */}
                   <Box
-                    className="mt-5 p-4 rounded-[20px] flex flex-col gap-3"
                     sx={{
+                      mt: 2.5,
+                      p: {
+                        xs: 2,
+                        sm: 2.5,
+                      },
+                      borderRadius: "20px",
                       backgroundColor: "white",
                       border: "1px solid #e5e7eb",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                      width: "100%",
+                      minWidth: 0,
                     }}
                   >
-                    <Box className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: {
+                          xs: "column",
+                          sm: "column",
+                          xl: "row",
+                        },
+                        alignItems: {
+                          xs: "stretch",
+                          xl: "center",
+                        },
+                        justifyContent: "space-between",
+                        gap: 2,
+                        width: "100%",
+                        minWidth: 0,
+                      }}
+                    >
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
                         <Typography fontWeight={900} fontSize={14}>
                           Change Status
                         </Typography>
 
-                        <Typography color="text.secondary" fontSize={13}>
+                        <Typography
+                          color="text.secondary"
+                          fontSize={13}
+                          sx={{
+                            lineHeight: 1.6,
+                            wordBreak: "break-word",
+                          }}
+                        >
                           Customers can only see active categories.
                         </Typography>
                       </Box>
 
                       <FormControl
                         size="small"
+                        fullWidth
                         sx={{
-                          minWidth: 150,
+                          width: {
+                            xs: "100%",
+                            xl: "155px",
+                          },
+                          flexShrink: 0,
                           "& .MuiOutlinedInput-root": {
                             borderRadius: "14px",
                             fontWeight: 800,
@@ -636,7 +721,17 @@ function ManageCategories() {
                       </FormControl>
                     </Box>
 
-                    <Box className="flex flex-col sm:flex-row gap-3">
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: {
+                          xs: "column",
+                          sm: "row",
+                        },
+                        gap: 1.5,
+                        width: "100%",
+                      }}
+                    >
                       <Button
                         fullWidth
                         variant="outlined"
