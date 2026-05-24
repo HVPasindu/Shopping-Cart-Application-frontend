@@ -154,8 +154,7 @@ function ManageOrders() {
         icon: "error",
         title: "Update Failed",
         text:
-          error.response?.data?.message ||
-          "Could not update order status.",
+          error.response?.data?.message || "Could not update order status.",
         confirmButtonColor: "#28DF99",
       });
     } finally {
@@ -213,7 +212,41 @@ function ManageOrders() {
   };
 
   const formatDate = (date) => {
+    if (!date) {
+      return "N/A";
+    }
+
     return new Date(date).toLocaleString();
+  };
+
+  const getCustomerName = (order) => {
+    return (
+      order.customer_name ||
+      order.user_name ||
+      order.name ||
+      order.customer?.name ||
+      "Customer"
+    );
+  };
+
+  const getCustomerEmail = (order) => {
+    return (
+      order.customer_email ||
+      order.user_email ||
+      order.email ||
+      order.customer?.email ||
+      "No email"
+    );
+  };
+
+  const getCustomerPhone = (order) => {
+    return (
+      order.customer_phone ||
+      order.user_phone ||
+      order.phone ||
+      order.customer?.phone ||
+      "No phone"
+    );
   };
 
   if (loading) {
@@ -240,19 +273,29 @@ function ManageOrders() {
         elevation={0}
         sx={{
           p: {
-            xs: 3,
-            sm: 4,
+            xs: 2,
+            sm: 3,
+            md: 4,
           },
           borderRadius: "28px",
           border: "1px solid #e5e7eb",
           backgroundColor: "white",
           boxShadow: "0 14px 35px rgba(0,0,0,0.06)",
+          width: "100%",
+          maxWidth: "100%",
+          overflow: "hidden",
+          boxSizing: "border-box",
         }}
       >
         {/* Header */}
         <Box
-          className="rounded-[26px] p-6 mb-8"
           sx={{
+            borderRadius: "26px",
+            p: {
+              xs: 3,
+              sm: 4,
+            },
+            mb: 4,
             background:
               "linear-gradient(135deg, #28DF99 0%, #a7f3d0 55%, #f6f7d4 100%)",
             position: "relative",
@@ -271,7 +314,7 @@ function ManageOrders() {
             }}
           />
 
-          <Box className="relative">
+          <Box sx={{ position: "relative", minWidth: 0 }}>
             <Box className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 text-[#16a66d] font-bold text-sm mb-4">
               <ReceiptLongIcon fontSize="small" />
               Manage Orders
@@ -286,6 +329,8 @@ function ManageOrders() {
                 },
                 lineHeight: 1.1,
                 color: "#0f172a",
+                wordBreak: "normal",
+                overflowWrap: "normal",
               }}
             >
               Order Management
@@ -301,6 +346,8 @@ function ManageOrders() {
                   sm: "16px",
                 },
                 lineHeight: 1.7,
+                wordBreak: "normal",
+                overflowWrap: "normal",
               }}
             >
               View customer orders, check order details, and update confirmed
@@ -311,34 +358,120 @@ function ManageOrders() {
 
         {/* Filters */}
         <Box
-          className="p-4 rounded-[22px] mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
           sx={{
+            p: {
+              xs: 2,
+              sm: 3,
+            },
+            borderRadius: "22px",
+            mb: 3,
             backgroundColor: "#f7fbff",
             border: "1px solid #e5e7eb",
+            display: "flex",
+            flexDirection: {
+              xs: "column",
+              lg: "row",
+            },
+            alignItems: {
+              xs: "stretch",
+              lg: "center",
+            },
+            justifyContent: "space-between",
+            gap: 2,
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+            overflow: "hidden",
+            boxSizing: "border-box",
           }}
         >
-          <Box>
-            <Typography fontWeight={900}>Order List</Typography>
+          <Box
+            sx={{
+              minWidth: 0,
+              flex: {
+                xs: "unset",
+                lg: "1 1 auto",
+              },
+              width: {
+                xs: "100%",
+                lg: "auto",
+              },
+            }}
+          >
+            <Typography
+              fontWeight={900}
+              sx={{
+                whiteSpace: "normal",
+                wordBreak: "normal",
+                overflowWrap: "normal",
+                lineHeight: 1.4,
+              }}
+            >
+              Order List
+            </Typography>
 
-            <Typography color="text.secondary" fontSize={14}>
+            <Typography
+              color="text.secondary"
+              fontSize={14}
+              sx={{
+                mt: 0.5,
+                lineHeight: 1.6,
+                whiteSpace: "normal",
+                wordBreak: "normal",
+                overflowWrap: "normal",
+                maxWidth: {
+                  xs: "100%",
+                  lg: "380px",
+                },
+              }}
+            >
               Filter orders by order status and payment status.
             </Typography>
           </Box>
 
-          <Box className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: {
+                xs: "column",
+                sm: "row",
+              },
+              flexWrap: "wrap",
+              gap: 1.5,
+              alignItems: {
+                xs: "stretch",
+                sm: "center",
+              },
+              justifyContent: {
+                xs: "flex-start",
+                lg: "flex-end",
+              },
+              width: {
+                xs: "100%",
+                lg: "auto",
+              },
+              minWidth: 0,
+              flexShrink: 0,
+            }}
+          >
             <Chip
               label={`${orders.length} Orders`}
               sx={{
                 fontWeight: 900,
                 backgroundColor: "#e6fdf4",
                 color: "#168a61",
+                justifyContent: "center",
+                minHeight: 40,
               }}
             />
 
             <FormControl
               size="small"
               sx={{
-                minWidth: 170,
+                width: {
+                  xs: "100%",
+                  sm: 170,
+                },
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "14px",
                   fontWeight: 800,
@@ -361,7 +494,10 @@ function ManageOrders() {
             <FormControl
               size="small"
               sx={{
-                minWidth: 170,
+                width: {
+                  xs: "100%",
+                  sm: 180,
+                },
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "14px",
                   fontWeight: 800,
@@ -384,10 +520,17 @@ function ManageOrders() {
 
         {/* Status Guide */}
         <Box
-          className="p-4 rounded-[22px] mb-6"
           sx={{
+            p: {
+              xs: 2,
+              sm: 3,
+            },
+            borderRadius: "22px",
+            mb: 3,
             backgroundColor: "#f7fbff",
             border: "1px solid #e5e7eb",
+            width: "100%",
+            boxSizing: "border-box",
           }}
         >
           <Box className="flex items-center gap-2 mb-3">
@@ -395,48 +538,73 @@ function ManageOrders() {
             <Typography fontWeight={900}>Status Guide</Typography>
           </Box>
 
-          <Box className="flex flex-wrap gap-3">
-            <Chip
-              label="Confirmed"
-              size="small"
-              sx={{
-                fontWeight: 900,
-                backgroundColor: "#dcfce7",
-                color: "#168a61",
-              }}
-            />
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 1.5,
+              alignItems: "center",
+            }}
+          >
+            <Box className="flex items-center gap-2">
+              <Chip
+                label="Confirmed"
+                size="small"
+                sx={{
+                  fontWeight: 900,
+                  backgroundColor: "#dcfce7",
+                  color: "#168a61",
+                }}
+              />
+              <Typography color="text.secondary" fontSize={13}>
+                Customer placed order
+              </Typography>
+            </Box>
 
-            <Typography color="text.secondary" fontSize={13}>
-              Customer placed order
-            </Typography>
+            <Box className="flex items-center gap-2">
+              <Chip
+                label="Completed"
+                size="small"
+                sx={{
+                  fontWeight: 900,
+                  backgroundColor: "#dbeafe",
+                  color: "#2563eb",
+                }}
+              />
+              <Typography color="text.secondary" fontSize={13}>
+                Admin finished order
+              </Typography>
+            </Box>
 
-            <Chip
-              label="Completed"
-              size="small"
-              sx={{
-                fontWeight: 900,
-                backgroundColor: "#dbeafe",
-                color: "#2563eb",
-              }}
-            />
+            <Box className="flex items-center gap-2">
+              <Chip
+                label="Cancelled"
+                size="small"
+                sx={{
+                  fontWeight: 900,
+                  backgroundColor: "#fee2e2",
+                  color: "#dc2626",
+                }}
+              />
+              <Typography color="text.secondary" fontSize={13}>
+                Order cancelled
+              </Typography>
+            </Box>
 
-            <Typography color="text.secondary" fontSize={13}>
-              Admin finished order
-            </Typography>
-
-            <Chip
-              label="Cancelled"
-              size="small"
-              sx={{
-                fontWeight: 900,
-                backgroundColor: "#fee2e2",
-                color: "#dc2626",
-              }}
-            />
-
-            <Typography color="text.secondary" fontSize={13}>
-              Order cancelled
-            </Typography>
+            <Box className="flex items-center gap-2">
+              <Chip
+                label="Pending"
+                size="small"
+                sx={{
+                  fontWeight: 900,
+                  backgroundColor: "#fef3c7",
+                  color: "#b45309",
+                }}
+              />
+              <Typography color="text.secondary" fontSize={13}>
+                Payment not completed
+              </Typography>
+            </Box>
           </Box>
         </Box>
 
@@ -458,148 +626,279 @@ function ManageOrders() {
             <Box>
               <ReceiptLongIcon sx={{ fontSize: 64, color: "primary.main" }} />
 
-              <Typography fontWeight={900} fontSize={24} className="mt-3">
+              <Typography fontWeight={900} fontSize={24} sx={{ mt: 1.5 }}>
                 No orders found
               </Typography>
 
-              <Typography color="text.secondary" className="mt-2">
+              <Typography color="text.secondary" sx={{ mt: 1 }}>
                 Orders will appear here after customers place orders.
               </Typography>
             </Box>
           </Box>
         ) : (
-          <Box className="flex flex-col gap-4">
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              width: "100%",
+              minWidth: 0,
+            }}
+          >
             {orders.map((order) => {
-              const orderStyle = getOrderStatusStyle(order.order_status);
-              const paymentStyle = getPaymentStatusStyle(order.payment_status);
+              const orderStatusStyle = getOrderStatusStyle(
+                order.order_status
+              );
+              const paymentStatusStyle = getPaymentStatusStyle(
+                order.payment_status
+              );
 
               return (
                 <Box
                   key={order.id}
                   sx={{
-                    p: 3,
-                    borderRadius: "26px",
+                    p: {
+                      xs: 2,
+                      sm: 3,
+                    },
+                    borderRadius: "24px",
                     backgroundColor: "#f7fbff",
                     border: "1px solid #e5e7eb",
+                    width: "100%",
+                    minWidth: 0,
+                    boxSizing: "border-box",
                     overflow: "hidden",
-                    transition: "0.25s",
-                    "&:hover": {
-                      backgroundColor: "#ecfdf5",
-                      boxShadow: "0 18px 35px rgba(0,0,0,0.08)",
-                    },
                   }}
                 >
-                  <Box className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                    <Box sx={{ minWidth: 0 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: {
+                        xs: "column",
+                        lg: "row",
+                      },
+                      justifyContent: "space-between",
+                      gap: 2,
+                      width: "100%",
+                      minWidth: 0,
+                    }}
+                  >
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
                       <Typography
                         fontWeight={900}
                         fontSize={20}
-                        sx={{ wordBreak: "break-word" }}
+                        sx={{
+                          lineHeight: 1.35,
+                          overflowWrap: "anywhere",
+                        }}
                       >
-                        {order.order_number}
+                        {order.order_number || `Order #${order.id}`}
                       </Typography>
 
-                      <Box className="flex flex-wrap gap-3 mt-2">
-                        <Box className="flex items-center gap-1">
-                          <PersonIcon
-                            sx={{ fontSize: 18, color: "#64748b" }}
-                          />
+                      <Typography
+                        color="text.secondary"
+                        fontSize={14}
+                        sx={{ mt: 0.5 }}
+                      >
+                        {formatDate(order.created_at)}
+                      </Typography>
 
-                          <Typography color="text.secondary" fontSize={14}>
-                            {order.customer_name}
-                          </Typography>
-                        </Box>
+                      <Box
+                        sx={{
+                          mt: 2,
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 1,
+                        }}
+                      >
+                        <Chip
+                          label={order.order_status}
+                          size="small"
+                          sx={{
+                            textTransform: "capitalize",
+                            fontWeight: 900,
+                            backgroundColor: orderStatusStyle.bg,
+                            color: orderStatusStyle.color,
+                          }}
+                        />
 
-                        <Box className="flex items-center gap-1">
-                          <EmailIcon sx={{ fontSize: 18, color: "#64748b" }} />
-
-                          <Typography
-                            color="text.secondary"
-                            fontSize={14}
-                            sx={{ wordBreak: "break-word" }}
-                          >
-                            {order.customer_email}
-                          </Typography>
-                        </Box>
-
-                        <Box className="flex items-center gap-1">
-                          <PhoneIcon sx={{ fontSize: 18, color: "#64748b" }} />
-
-                          <Typography color="text.secondary" fontSize={14}>
-                            {order.customer_phone || "No phone"}
-                          </Typography>
-                        </Box>
+                        <Chip
+                          label={`Payment: ${order.payment_status}`}
+                          size="small"
+                          sx={{
+                            textTransform: "capitalize",
+                            fontWeight: 900,
+                            backgroundColor: paymentStatusStyle.bg,
+                            color: paymentStatusStyle.color,
+                          }}
+                        />
                       </Box>
-
-                      <Typography color="primary" fontWeight={900} mt={2}>
-                        Total: Rs. {order.total_amount}
-                      </Typography>
-
-                      <Typography color="text.secondary" fontSize={14} mt={0.5}>
-                        Date: {formatDate(order.created_at)}
-                      </Typography>
                     </Box>
 
-                    <Box className="flex flex-wrap items-center gap-3">
-                      <Chip
-                        label={order.order_status}
-                        sx={{
-                          textTransform: "capitalize",
-                          fontWeight: 900,
-                          backgroundColor: orderStyle.bg,
-                          color: orderStyle.color,
-                        }}
-                      />
+                    <Box
+                      sx={{
+                        textAlign: {
+                          xs: "left",
+                          lg: "right",
+                        },
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Typography color="text.secondary" fontSize={14}>
+                        Total Amount
+                      </Typography>
 
-                      <Chip
-                        label={`Payment: ${order.payment_status}`}
-                        sx={{
-                          textTransform: "capitalize",
-                          fontWeight: 900,
-                          backgroundColor: paymentStyle.bg,
-                          color: paymentStyle.color,
-                        }}
-                      />
-
-                      <Button
-                        variant="outlined"
-                        startIcon={<VisibilityIcon />}
-                        onClick={() => viewOrderDetails(order.id)}
-                        sx={{
-                          textTransform: "none",
-                          fontWeight: 900,
-                          borderRadius: "14px",
-                          borderColor: "primary.main",
-                          color: "primary.main",
-                        }}
+                      <Typography
+                        color="primary"
+                        fontWeight={900}
+                        fontSize={24}
                       >
-                        View
-                      </Button>
+                        Rs. {order.total_amount}
+                      </Typography>
                     </Box>
                   </Box>
 
-                  {order.order_status === "confirmed" && (
+                  <Divider sx={{ my: 2 }} />
+
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        md: "repeat(3, minmax(0, 1fr))",
+                      },
+                      gap: 1.5,
+                    }}
+                  >
                     <Box
-                      className="mt-5 p-4 rounded-[20px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                       sx={{
+                        p: 1.5,
+                        borderRadius: "16px",
                         backgroundColor: "white",
                         border: "1px solid #e5e7eb",
+                        minWidth: 0,
                       }}
                     >
-                      <Box>
-                        <Typography fontWeight={900} fontSize={14}>
-                          Update Order Status
-                        </Typography>
-
-                        <Typography color="text.secondary" fontSize={13}>
-                          Admin can only mark confirmed orders as completed or
-                          cancelled.
+                      <Box className="flex items-center gap-2">
+                        <PersonIcon sx={{ fontSize: 18, color: "#64748b" }} />
+                        <Typography
+                          color="text.secondary"
+                          fontSize={12}
+                          fontWeight={800}
+                        >
+                          Customer
                         </Typography>
                       </Box>
 
-                      <Box className="flex flex-col sm:flex-row gap-3">
+                      <Typography
+                        fontWeight={900}
+                        fontSize={14}
+                        sx={{
+                          mt: 0.5,
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        {getCustomerName(order)}
+                      </Typography>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        p: 1.5,
+                        borderRadius: "16px",
+                        backgroundColor: "white",
+                        border: "1px solid #e5e7eb",
+                        minWidth: 0,
+                      }}
+                    >
+                      <Box className="flex items-center gap-2">
+                        <EmailIcon sx={{ fontSize: 18, color: "#64748b" }} />
+                        <Typography
+                          color="text.secondary"
+                          fontSize={12}
+                          fontWeight={800}
+                        >
+                          Email
+                        </Typography>
+                      </Box>
+
+                      <Typography
+                        fontWeight={900}
+                        fontSize={14}
+                        sx={{
+                          mt: 0.5,
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        {getCustomerEmail(order)}
+                      </Typography>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        p: 1.5,
+                        borderRadius: "16px",
+                        backgroundColor: "white",
+                        border: "1px solid #e5e7eb",
+                        minWidth: 0,
+                      }}
+                    >
+                      <Box className="flex items-center gap-2">
+                        <PhoneIcon sx={{ fontSize: 18, color: "#64748b" }} />
+                        <Typography
+                          color="text.secondary"
+                          fontSize={12}
+                          fontWeight={800}
+                        >
+                          Phone
+                        </Typography>
+                      </Box>
+
+                      <Typography
+                        fontWeight={900}
+                        fontSize={14}
+                        sx={{
+                          mt: 0.5,
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        {getCustomerPhone(order)}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      mt: 2,
+                      display: "flex",
+                      flexDirection: {
+                        xs: "column",
+                        sm: "row",
+                      },
+                      gap: 1.5,
+                    }}
+                  >
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={<VisibilityIcon />}
+                      onClick={() => viewOrderDetails(order.id)}
+                      sx={{
+                        textTransform: "none",
+                        fontWeight: 900,
+                        borderRadius: "14px",
+                        borderColor: "primary.main",
+                        color: "primary.main",
+                      }}
+                    >
+                      View Details
+                    </Button>
+
+                    {order.order_status === "confirmed" && (
+                      <>
                         <Button
-                          variant="contained"
+                          fullWidth
+                          variant="outlined"
                           startIcon={<CheckCircleIcon />}
                           disabled={updatingId === order.id}
                           onClick={() =>
@@ -609,13 +908,15 @@ function ManageOrders() {
                             textTransform: "none",
                             fontWeight: 900,
                             borderRadius: "14px",
-                            boxShadow: "none",
+                            borderColor: "#2563eb",
+                            color: "#2563eb",
                           }}
                         >
                           Complete
                         </Button>
 
                         <Button
+                          fullWidth
                           variant="outlined"
                           startIcon={<CancelIcon />}
                           disabled={updatingId === order.id}
@@ -632,9 +933,9 @@ function ManageOrders() {
                         >
                           Cancel
                         </Button>
-                      </Box>
-                    </Box>
-                  )}
+                      </>
+                    )}
+                  </Box>
                 </Box>
               );
             })}
@@ -642,163 +943,153 @@ function ManageOrders() {
         )}
       </Paper>
 
-      {/* Order Details Dialog */}
+      {/* Details Dialog */}
       <Dialog
         open={openDetails}
         onClose={() => setOpenDetails(false)}
         fullWidth
-        maxWidth="sm"
+        maxWidth="md"
         PaperProps={{
           sx: {
             borderRadius: "28px",
-            backgroundColor: "rgba(246, 247, 212, 0.96)",
-            backdropFilter: "blur(8px)",
           },
         }}
       >
-        <DialogTitle fontWeight={900}>Order Details</DialogTitle>
+        <DialogTitle
+          sx={{
+            fontWeight: 900,
+          }}
+        >
+          Order Details
+        </DialogTitle>
 
         <DialogContent>
           {detailsLoading ? (
-            <Box className="flex justify-center py-8">
+            <Box
+              sx={{
+                minHeight: 220,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <CircularProgress />
             </Box>
           ) : selectedOrder ? (
             <Box>
-              <Typography fontWeight={900} fontSize={20}>
-                {selectedOrder.order_number}
-              </Typography>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: "20px",
+                  backgroundColor: "#f7fbff",
+                  border: "1px solid #e5e7eb",
+                  mb: 2,
+                }}
+              >
+                <Typography fontWeight={900} fontSize={20}>
+                  {selectedOrder.order_number || `Order #${selectedOrder.id}`}
+                </Typography>
 
-              <Typography color="text.secondary" fontSize={14} mt={1}>
-                Customer: {selectedOrder.customer_name}
-              </Typography>
+                <Typography color="text.secondary" fontSize={14} sx={{ mt: 1 }}>
+                  Created At: {formatDate(selectedOrder.created_at)}
+                </Typography>
 
-              <Typography color="text.secondary" fontSize={14}>
-                Email: {selectedOrder.customer_email}
-              </Typography>
+                <Typography color="text.secondary" fontSize={14}>
+                  Total Amount: Rs. {selectedOrder.total_amount}
+                </Typography>
 
-              <Typography color="text.secondary" fontSize={14}>
-                Phone: {selectedOrder.customer_phone || "No phone"}
-              </Typography>
+                <Box sx={{ mt: 1.5, display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  <Chip
+                    label={selectedOrder.order_status}
+                    size="small"
+                    sx={{
+                      textTransform: "capitalize",
+                      fontWeight: 900,
+                      backgroundColor: getOrderStatusStyle(
+                        selectedOrder.order_status
+                      ).bg,
+                      color: getOrderStatusStyle(selectedOrder.order_status)
+                        .color,
+                    }}
+                  />
 
-              <Typography color="primary" fontWeight={900} mt={2}>
-                Total: Rs. {selectedOrder.total_amount}
-              </Typography>
-
-              <Box className="flex flex-wrap gap-2 mt-3">
-                <Chip
-                  label={`Order: ${selectedOrder.order_status}`}
-                  sx={{
-                    textTransform: "capitalize",
-                    fontWeight: 900,
-                    backgroundColor: getOrderStatusStyle(
-                      selectedOrder.order_status
-                    ).bg,
-                    color: getOrderStatusStyle(selectedOrder.order_status)
-                      .color,
-                  }}
-                />
-
-                <Chip
-                  label={`Payment: ${selectedOrder.payment_status}`}
-                  sx={{
-                    textTransform: "capitalize",
-                    fontWeight: 900,
-                    backgroundColor: getPaymentStatusStyle(
-                      selectedOrder.payment_status
-                    ).bg,
-                    color: getPaymentStatusStyle(selectedOrder.payment_status)
-                      .color,
-                  }}
-                />
+                  <Chip
+                    label={`Payment: ${selectedOrder.payment_status}`}
+                    size="small"
+                    sx={{
+                      textTransform: "capitalize",
+                      fontWeight: 900,
+                      backgroundColor: getPaymentStatusStyle(
+                        selectedOrder.payment_status
+                      ).bg,
+                      color: getPaymentStatusStyle(
+                        selectedOrder.payment_status
+                      ).color,
+                    }}
+                  />
+                </Box>
               </Box>
 
-              <Divider sx={{ my: 3 }} />
-
-              <Typography fontWeight={900} fontSize={18} mb={2}>
+              <Typography fontWeight={900} fontSize={18} sx={{ mb: 1.5 }}>
                 Ordered Items
               </Typography>
 
-              <Box className="flex flex-col gap-3">
-                {selectedOrder.items?.map((item) => (
-                  <Box
-                    key={item.id}
-                    className="p-3 rounded-[16px]"
-                    sx={{
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
-                    }}
-                  >
-                    <Typography fontWeight={900}>
-                      {item.product_name}
-                    </Typography>
+              {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                  {selectedOrder.items.map((item) => (
+                    <Box
+                      key={item.id}
+                      sx={{
+                        p: 2,
+                        borderRadius: "18px",
+                        backgroundColor: "#f7fbff",
+                        border: "1px solid #e5e7eb",
+                        display: "flex",
+                        flexDirection: {
+                          xs: "column",
+                          sm: "row",
+                        },
+                        justifyContent: "space-between",
+                        gap: 1.5,
+                      }}
+                    >
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography
+                          fontWeight={900}
+                          sx={{ overflowWrap: "anywhere" }}
+                        >
+                          {item.product_name}
+                        </Typography>
 
-                    <Typography color="text.secondary" fontSize={14}>
-                      Qty: {item.quantity} × Rs. {item.unit_price}
-                    </Typography>
+                        <Typography color="text.secondary" fontSize={14}>
+                          Qty: {item.quantity} × Rs. {item.unit_price}
+                        </Typography>
+                      </Box>
 
-                    <Typography color="primary" fontWeight={900}>
-                      Rs. {item.subtotal}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-
-              {selectedOrder.order_status === "confirmed" && (
-                <Box className="flex flex-col sm:flex-row gap-3 mt-4">
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<CheckCircleIcon />}
-                    disabled={updatingId === selectedOrder.id}
-                    onClick={() =>
-                      updateOrderStatus(selectedOrder.id, "completed")
-                    }
-                    sx={{
-                      textTransform: "none",
-                      fontWeight: 900,
-                      borderRadius: "14px",
-                      boxShadow: "none",
-                    }}
-                  >
-                    Complete Order
-                  </Button>
-
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<CancelIcon />}
-                    disabled={updatingId === selectedOrder.id}
-                    onClick={() =>
-                      updateOrderStatus(selectedOrder.id, "cancelled")
-                    }
-                    sx={{
-                      textTransform: "none",
-                      fontWeight: 900,
-                      borderRadius: "14px",
-                      borderColor: "#ef4444",
-                      color: "#ef4444",
-                    }}
-                  >
-                    Cancel Order
-                  </Button>
+                      <Typography color="primary" fontWeight={900}>
+                        Rs. {item.subtotal}
+                      </Typography>
+                    </Box>
+                  ))}
                 </Box>
+              ) : (
+                <Typography color="text.secondary">No items found.</Typography>
               )}
             </Box>
           ) : (
-            <Typography color="text.secondary">No details found.</Typography>
+            <Typography color="text.secondary">No order selected.</Typography>
           )}
         </DialogContent>
 
         <DialogActions sx={{ p: 3 }}>
           <Button
             onClick={() => setOpenDetails(false)}
-            variant="contained"
+            variant="outlined"
             sx={{
               textTransform: "none",
               fontWeight: 900,
               borderRadius: "14px",
-              boxShadow: "none",
+              px: 3,
             }}
           >
             Close

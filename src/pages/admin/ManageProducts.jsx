@@ -24,6 +24,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import ImageIcon from "@mui/icons-material/Image";
+import CategoryIcon from "@mui/icons-material/Category";
+import PaidIcon from "@mui/icons-material/Paid";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
 import Swal from "sweetalert2";
 import API from "../../services/api";
@@ -55,6 +58,54 @@ function ManageProducts() {
     price: "",
     stock_quantity: "",
   });
+
+  const getBackendBaseUrl = () => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    return apiBaseUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+  };
+
+  const getImageUrl = (image) => {
+    const rawImageUrl =
+      image?.image_url_full ||
+      image?.image_url ||
+      image?.url ||
+      image?.path ||
+      image;
+
+    if (!rawImageUrl) {
+      return null;
+    }
+
+    const imageUrl = String(rawImageUrl);
+
+    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+      return imageUrl;
+    }
+
+    return `${getBackendBaseUrl()}/${imageUrl.replace(/^\/+/, "")}`;
+  };
+
+  const getProductImage = (product) => {
+    if (product.main_image) {
+      return getImageUrl(product.main_image);
+    }
+
+    if (product.images && product.images.length > 0) {
+      return getImageUrl(product.images[0]);
+    }
+
+    if (product.product_images && product.product_images.length > 0) {
+      return getImageUrl(product.product_images[0]);
+    }
+
+    if (product.image_url_full || product.image_url || product.image) {
+      return getImageUrl(
+        product.image_url_full || product.image_url || product.image
+      );
+    }
+
+    return null;
+  };
 
   const getProducts = useCallback(async () => {
     try {
@@ -221,7 +272,9 @@ function ManageProducts() {
       nextErrors.price = "Price must be greater than 0";
     }
 
-    if (formData.stock_quantity !== "" && Number(formData.stock_quantity) < 0) {
+    if (formData.stock_quantity === "") {
+      nextErrors.stock_quantity = "Stock quantity is required";
+    } else if (Number(formData.stock_quantity) < 0) {
       nextErrors.stock_quantity = "Stock quantity cannot be negative";
     }
 
@@ -246,19 +299,17 @@ function ManageProducts() {
       setSaving(true);
 
       const data = new FormData();
-
       data.append("category_id", formData.category_id);
       data.append("name", formData.name);
       data.append("description", formData.description);
       data.append("price", formData.price);
-      data.append(
-        "stock_quantity",
-        formData.stock_quantity === "" ? 0 : formData.stock_quantity
-      );
+      data.append("stock_quantity", formData.stock_quantity);
 
-      formData.images.forEach((image) => {
-        data.append("product_images", image);
-      });
+      if (formData.images && formData.images.length > 0) {
+        formData.images.forEach((image) => {
+          data.append("product_images", image);
+        });
+      }
 
       if (editingProduct) {
         await API.put(`/products/${editingProduct.id}`, data);
@@ -372,34 +423,6 @@ function ManageProducts() {
     }
   };
 
-  const handleImagesChange = (e) => {
-    const files = Array.from(e.target.files || []);
-
-    if (files.length === 0) {
-      handleInputChange("images", []);
-      return;
-    }
-
-    const maxSize = 10 * 1024 * 1024;
-
-    const largeFile = files.find((file) => file.size > maxSize);
-
-    if (largeFile) {
-      Swal.fire({
-        icon: "error",
-        title: "Image Too Large",
-        text: "Please select images smaller than 10MB.",
-        confirmButtonColor: "#28DF99",
-      });
-
-      e.target.value = "";
-      handleInputChange("images", []);
-      return;
-    }
-
-    handleInputChange("images", files);
-  };
-
   const getStatusStyle = (status) => {
     if (status === "active") {
       return {
@@ -414,6 +437,18 @@ function ManageProducts() {
     };
   };
 
+  const getCategoryName = (categoryId, productCategoryName) => {
+    if (productCategoryName) {
+      return productCategoryName;
+    }
+
+    const category = categories.find(
+      (item) => Number(item.id) === Number(categoryId)
+    );
+
+    return category ? category.name : "No category";
+  };
+
   const inputStyle = {
     mb: 3,
     "& .MuiOutlinedInput-root": {
@@ -426,10 +461,6 @@ function ManageProducts() {
       ml: 1,
     },
   };
-
-  const activeCategories = categories.filter(
-    (category) => category.status === "active"
-  );
 
   if (loading) {
     return (
@@ -455,19 +486,29 @@ function ManageProducts() {
         elevation={0}
         sx={{
           p: {
-            xs: 3,
-            sm: 4,
+            xs: 2,
+            sm: 3,
+            md: 4,
           },
           borderRadius: "28px",
           border: "1px solid #e5e7eb",
           backgroundColor: "white",
           boxShadow: "0 14px 35px rgba(0,0,0,0.06)",
+          width: "100%",
+          maxWidth: "100%",
+          overflow: "hidden",
+          boxSizing: "border-box",
         }}
       >
         {/* Header */}
         <Box
-          className="rounded-[26px] p-6 mb-8"
           sx={{
+            borderRadius: "26px",
+            p: {
+              xs: 3,
+              sm: 4,
+            },
+            mb: 4,
             background:
               "linear-gradient(135deg, #28DF99 0%, #a7f3d0 55%, #f6f7d4 100%)",
             position: "relative",
@@ -477,17 +518,33 @@ function ManageProducts() {
           <Box
             sx={{
               position: "absolute",
-              width: 150,
-              height: 150,
+              width: 170,
+              height: 170,
               borderRadius: "50%",
-              backgroundColor: "rgba(255,255,255,0.28)",
-              top: -45,
-              right: -35,
+              backgroundColor: "rgba(255,255,255,0.26)",
+              top: -55,
+              right: -45,
             }}
           />
 
-          <Box className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-            <Box>
+          <Box
+            sx={{
+              position: "relative",
+              display: "flex",
+              flexDirection: {
+                xs: "column",
+                sm: "row",
+              },
+              alignItems: {
+                xs: "flex-start",
+                sm: "center",
+              },
+              justifyContent: "space-between",
+              gap: 3,
+              minWidth: 0,
+            }}
+          >
+            <Box sx={{ minWidth: 0 }}>
               <Box className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 text-[#16a66d] font-bold text-sm mb-4">
                 <Inventory2Icon fontSize="small" />
                 Manage Products
@@ -502,6 +559,7 @@ function ManageProducts() {
                   },
                   lineHeight: 1.1,
                   color: "#0f172a",
+                  overflowWrap: "anywhere",
                 }}
               >
                 Product Management
@@ -517,6 +575,7 @@ function ManageProducts() {
                     sm: "16px",
                   },
                   lineHeight: 1.7,
+                  overflowWrap: "anywhere",
                 }}
               >
                 Add products, upload multiple images, update stock, price, and
@@ -537,6 +596,7 @@ function ManageProducts() {
                 boxShadow: "none",
                 backgroundColor: "white",
                 color: "primary.main",
+                flexShrink: 0,
                 "&:hover": {
                   backgroundColor: "#f7fbff",
                 },
@@ -547,36 +607,90 @@ function ManageProducts() {
           </Box>
         </Box>
 
-        {/* Filter */}
+        {/* Filters */}
         <Box
-          className="p-4 rounded-[22px] mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
           sx={{
+            p: {
+              xs: 2,
+              sm: 3,
+            },
+            borderRadius: "22px",
+            mb: 3,
             backgroundColor: "#f7fbff",
             border: "1px solid #e5e7eb",
+            display: "flex",
+            flexDirection: {
+              xs: "column",
+              xl: "row",
+            },
+            alignItems: {
+              xs: "stretch",
+              xl: "center",
+            },
+            justifyContent: "space-between",
+            gap: 2,
+            width: "100%",
+            boxSizing: "border-box",
+            overflow: "hidden",
           }}
         >
-          <Box>
+          <Box sx={{ minWidth: 0 }}>
             <Typography fontWeight={900}>Product List</Typography>
 
-            <Typography color="text.secondary" fontSize={14}>
+            <Typography
+              color="text.secondary"
+              fontSize={14}
+              sx={{
+                mt: 0.5,
+                lineHeight: 1.6,
+              }}
+            >
               Filter products by status and category.
             </Typography>
           </Box>
 
-          <Box className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: {
+                xs: "column",
+                md: "row",
+              },
+              flexWrap: "wrap",
+              gap: 1.5,
+              alignItems: {
+                xs: "stretch",
+                md: "center",
+              },
+              justifyContent: {
+                xs: "flex-start",
+                md: "flex-end",
+              },
+              width: {
+                xs: "100%",
+                xl: "auto",
+              },
+              minWidth: 0,
+            }}
+          >
             <Chip
               label={`${products.length} Products`}
               sx={{
                 fontWeight: 900,
                 backgroundColor: "#e6fdf4",
                 color: "#168a61",
+                justifyContent: "center",
+                minHeight: 40,
               }}
             />
 
             <FormControl
               size="small"
               sx={{
-                minWidth: 160,
+                width: {
+                  xs: "100%",
+                  md: 170,
+                },
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "14px",
                   fontWeight: 800,
@@ -597,7 +711,10 @@ function ManageProducts() {
             <FormControl
               size="small"
               sx={{
-                minWidth: 190,
+                width: {
+                  xs: "100%",
+                  md: 230,
+                },
                 "& .MuiOutlinedInput-root": {
                   borderRadius: "14px",
                   fontWeight: 800,
@@ -612,7 +729,7 @@ function ManageProducts() {
                 <MenuItem value="all">All Categories</MenuItem>
 
                 {categories.map((category) => (
-                  <MenuItem key={category.id} value={String(category.id)}>
+                  <MenuItem key={category.id} value={category.id}>
                     {category.name}
                   </MenuItem>
                 ))}
@@ -621,7 +738,7 @@ function ManageProducts() {
           </Box>
         </Box>
 
-        {/* Product cards */}
+        {/* Product Cards - FLEX RESPONSIVE */}
         {products.length === 0 ? (
           <Box
             sx={{
@@ -639,11 +756,11 @@ function ManageProducts() {
             <Box>
               <Inventory2Icon sx={{ fontSize: 64, color: "primary.main" }} />
 
-              <Typography fontWeight={900} fontSize={24} className="mt-3">
+              <Typography fontWeight={900} fontSize={24} sx={{ mt: 1.5 }}>
                 No products found
               </Typography>
 
-              <Typography color="text.secondary" className="mt-2">
+              <Typography color="text.secondary" sx={{ mt: 1 }}>
                 Products will appear here after you add them.
               </Typography>
             </Box>
@@ -655,16 +772,16 @@ function ManageProducts() {
               flexWrap: "wrap",
               gap: 2.5,
               width: "100%",
-              alignItems: "stretch",
+              minWidth: 0,
             }}
           >
             {products.map((product) => {
               const statusStyle = getStatusStyle(product.status);
-
-              const mainImage =
-                product.images && product.images.length > 0
-                  ? product.images[0].image_url_full
-                  : null;
+              const imageUrl = getProductImage(product);
+              const categoryName = getCategoryName(
+                product.category_id,
+                product.category_name
+              );
 
               return (
                 <Box
@@ -672,11 +789,12 @@ function ManageProducts() {
                   sx={{
                     width: {
                       xs: "100%",
-                      lg: "calc(50% - 10px)",
+                      "2xl": "calc(50% - 10px)",
                     },
+                    flexGrow: 1,
                     p: {
                       xs: 2,
-                      sm: 3,
+                      sm: 2.5,
                     },
                     borderRadius: "26px",
                     backgroundColor: "#f7fbff",
@@ -687,192 +805,73 @@ function ManageProducts() {
                     transition: "0.25s",
                     "&:hover": {
                       backgroundColor: "#ecfdf5",
-                      transform: {
-                        xs: "none",
-                        md: "translateY(-4px)",
-                      },
                       boxShadow: "0 18px 35px rgba(0,0,0,0.08)",
                     },
                   }}
                 >
-                  {/* Image */}
-                  <Box
-                    sx={{
-                      width: "100%",
-                      height: {
-                        xs: 200,
-                        sm: 230,
-                      },
-                      borderRadius: "22px",
-                      overflow: "hidden",
-                      backgroundColor: "#e6fdf4",
-                      mb: 3,
-                    }}
-                  >
-                    {mainImage ? (
-                      <Box
-                        component="img"
-                        src={mainImage}
-                        alt={product.name}
-                        sx={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                      />
-                    ) : (
-                      <Box className="w-full h-full flex items-center justify-center">
-                        <ImageIcon
-                          sx={{
-                            fontSize: 70,
-                            color: "primary.main",
-                          }}
-                        />
-                      </Box>
-                    )}
-                  </Box>
-
-                  {/* Product info */}
                   <Box
                     sx={{
                       display: "flex",
                       flexDirection: "column",
-                      alignItems: "flex-start",
-                      gap: 1.5,
+                      gap: 2.5,
                       width: "100%",
                       minWidth: 0,
                     }}
                   >
-                    <Chip
-                      label={product.status}
-                      sx={{
-                        textTransform: "capitalize",
-                        fontWeight: 900,
-                        backgroundColor: statusStyle.bg,
-                        color: statusStyle.color,
-                        alignSelf: "flex-start",
-                      }}
-                    />
-
-                    <Box sx={{ minWidth: 0, width: "100%" }}>
-                      <Typography
-                        fontWeight={900}
-                        fontSize={22}
-                        sx={{
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {product.name}
-                      </Typography>
-
-                      <Typography color="primary" fontWeight={900} mt={1}>
-                        Rs. {product.price}
-                      </Typography>
-
-                      <Typography color="text.secondary" fontSize={14} mt={0.5}>
-                        Category: {product.category_name}
-                      </Typography>
-
-                      <Typography color="text.secondary" fontSize={14} mt={0.5}>
-                        Stock: {product.stock_quantity}
-                      </Typography>
-
-                      <Typography
-                        color="text.secondary"
-                        sx={{
-                          mt: 1,
-                          fontSize: "14px",
-                          lineHeight: 1.7,
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {product.description || "No description available."}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {/* Status and actions */}
-                  <Box
-                    sx={{
-                      mt: 2.5,
-                      p: {
-                        xs: 2,
-                        sm: 2.5,
-                      },
-                      borderRadius: "20px",
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 2,
-                      width: "100%",
-                      maxWidth: "100%",
-                      minWidth: 0,
-                      boxSizing: "border-box",
-                      overflow: "hidden",
-                    }}
-                  >
+                    {/* Image */}
                     <Box
                       sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "stretch",
-                        gap: 2,
                         width: "100%",
-                        maxWidth: "100%",
-                        minWidth: 0,
+                        borderRadius: "22px",
+                        border: "1px solid #d1fae5",
+                        background:
+                          "linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)",
+                        boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
+                        p: 1.2,
+                        boxSizing: "border-box",
                       }}
                     >
-                      <Box sx={{ minWidth: 0, width: "100%" }}>
-                        <Typography fontWeight={900} fontSize={14}>
-                          Change Status
-                        </Typography>
-
-                        <Typography
-                          color="text.secondary"
-                          fontSize={13}
-                          sx={{
-                            lineHeight: 1.6,
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          Customers can only see active products.
-                        </Typography>
-                      </Box>
-
-                      <FormControl
-                        size="small"
-                        fullWidth
+                      <Box
                         sx={{
                           width: "100%",
-                          maxWidth: "100%",
-                          minWidth: 0,
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "14px",
-                            fontWeight: 800,
-                            backgroundColor: "#f7fbff",
-                            width: "100%",
+                          height: {
+                            xs: 220,
+                            sm: 260,
+                            md: 280,
                           },
-                          "& .MuiSelect-select": {
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          },
+                          borderRadius: "18px",
+                          overflow: "hidden",
+                          backgroundColor: "white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
-                        <Select
-                          value={product.status}
-                          onChange={(e) =>
-                            updateProductStatus(product.id, e.target.value)
-                          }
-                        >
-                          <MenuItem value="active">Active</MenuItem>
-                          <MenuItem value="inactive">Inactive</MenuItem>
-                        </Select>
-                      </FormControl>
+                        {imageUrl ? (
+                          <Box
+                            component="img"
+                            src={imageUrl}
+                            alt={product.name}
+                            sx={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "contain",
+                              objectPosition: "center",
+                              display: "block",
+                            }}
+                          />
+                        ) : (
+                          <ImageIcon
+                            sx={{
+                              fontSize: 70,
+                              color: "primary.main",
+                            }}
+                          />
+                        )}
+                      </Box>
                     </Box>
 
+                    {/* Top Info */}
                     <Box
                       sx={{
                         display: "flex",
@@ -880,45 +879,279 @@ function ManageProducts() {
                           xs: "column",
                           sm: "row",
                         },
-                        gap: 1.5,
+                        alignItems: {
+                          xs: "flex-start",
+                          sm: "flex-start",
+                        },
+                        justifyContent: "space-between",
+                        gap: 2,
                         width: "100%",
-                        maxWidth: "100%",
                         minWidth: 0,
                       }}
                     >
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        startIcon={<EditIcon />}
-                        onClick={() => openEditDialog(product)}
-                        sx={{
-                          textTransform: "none",
-                          fontWeight: 900,
-                          borderRadius: "14px",
-                          borderColor: "primary.main",
-                          color: "primary.main",
-                          minWidth: 0,
-                        }}
-                      >
-                        Edit
-                      </Button>
+                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                        <Typography
+                          fontWeight={900}
+                          fontSize={21}
+                          sx={{
+                            lineHeight: 1.35,
+                            overflowWrap: "anywhere",
+                          }}
+                        >
+                          {product.name}
+                        </Typography>
 
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        startIcon={<DeleteIcon />}
-                        onClick={() => deleteProduct(product.id)}
+                        <Typography
+                          color="text.secondary"
+                          sx={{
+                            mt: 1,
+                            fontSize: "14px",
+                            lineHeight: 1.7,
+                            overflowWrap: "anywhere",
+                          }}
+                        >
+                          {product.description || "No description available."}
+                        </Typography>
+                      </Box>
+
+                      <Chip
+                        label={product.status}
                         sx={{
-                          textTransform: "none",
+                          textTransform: "capitalize",
                           fontWeight: 900,
-                          borderRadius: "14px",
-                          borderColor: "#ef4444",
-                          color: "#ef4444",
+                          backgroundColor: statusStyle.bg,
+                          color: statusStyle.color,
+                          flexShrink: 0,
+                        }}
+                      />
+                    </Box>
+
+                    {/* Details */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 1.5,
+                        width: "100%",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          flex: {
+                            xs: "1 1 100%",
+                            sm: "1 1 160px",
+                          },
+                          p: 1.5,
+                          borderRadius: "16px",
+                          backgroundColor: "white",
+                          border: "1px solid #e5e7eb",
                           minWidth: 0,
                         }}
                       >
-                        Delete
-                      </Button>
+                        <Box className="flex items-center gap-2">
+                          <CategoryIcon
+                            sx={{ fontSize: 18, color: "#64748b" }}
+                          />
+                          <Typography
+                            color="text.secondary"
+                            fontSize={12}
+                            fontWeight={800}
+                          >
+                            Category
+                          </Typography>
+                        </Box>
+
+                        <Typography
+                          fontWeight={900}
+                          fontSize={14}
+                          sx={{
+                            mt: 0.5,
+                            overflowWrap: "anywhere",
+                          }}
+                        >
+                          {categoryName}
+                        </Typography>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          flex: {
+                            xs: "1 1 100%",
+                            sm: "1 1 120px",
+                          },
+                          p: 1.5,
+                          borderRadius: "16px",
+                          backgroundColor: "white",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      >
+                        <Box className="flex items-center gap-2">
+                          <PaidIcon sx={{ fontSize: 18, color: "#64748b" }} />
+                          <Typography
+                            color="text.secondary"
+                            fontSize={12}
+                            fontWeight={800}
+                          >
+                            Price
+                          </Typography>
+                        </Box>
+
+                        <Typography
+                          color="primary"
+                          fontWeight={900}
+                          fontSize={14}
+                          sx={{ mt: 0.5 }}
+                        >
+                          Rs. {product.price}
+                        </Typography>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          flex: {
+                            xs: "1 1 100%",
+                            sm: "1 1 120px",
+                          },
+                          p: 1.5,
+                          borderRadius: "16px",
+                          backgroundColor: "white",
+                          border: "1px solid #e5e7eb",
+                        }}
+                      >
+                        <Box className="flex items-center gap-2">
+                          <InventoryIcon
+                            sx={{ fontSize: 18, color: "#64748b" }}
+                          />
+                          <Typography
+                            color="text.secondary"
+                            fontSize={12}
+                            fontWeight={800}
+                          >
+                            Stock
+                          </Typography>
+                        </Box>
+
+                        <Typography
+                          fontWeight={900}
+                          fontSize={14}
+                          sx={{ mt: 0.5 }}
+                        >
+                          {product.stock_quantity}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Status + Actions */}
+                    <Box
+                      sx={{
+                        p: 2,
+                        borderRadius: "20px",
+                        backgroundColor: "white",
+                        border: "1px solid #e5e7eb",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                        width: "100%",
+                        boxSizing: "border-box",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: {
+                            xs: "column",
+                            sm: "row",
+                          },
+                          alignItems: {
+                            xs: "stretch",
+                            sm: "center",
+                          },
+                          justifyContent: "space-between",
+                          gap: 2,
+                        }}
+                      >
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography fontWeight={900} fontSize={14}>
+                            Change Status
+                          </Typography>
+
+                          <Typography
+                            color="text.secondary"
+                            fontSize={13}
+                            sx={{ lineHeight: 1.6 }}
+                          >
+                            Customers can only see active products.
+                          </Typography>
+                        </Box>
+
+                        <FormControl
+                          size="small"
+                          sx={{
+                            width: {
+                              xs: "100%",
+                              sm: 150,
+                            },
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: "14px",
+                              fontWeight: 800,
+                              backgroundColor: "#f7fbff",
+                            },
+                          }}
+                        >
+                          <Select
+                            value={product.status}
+                            onChange={(e) =>
+                              updateProductStatus(product.id, e.target.value)
+                            }
+                          >
+                            <MenuItem value="active">Active</MenuItem>
+                            <MenuItem value="inactive">Inactive</MenuItem>
+                          </Select>
+                        </FormControl>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: {
+                            xs: "column",
+                            sm: "row",
+                          },
+                          gap: 1.5,
+                        }}
+                      >
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          startIcon={<EditIcon />}
+                          onClick={() => openEditDialog(product)}
+                          sx={{
+                            textTransform: "none",
+                            fontWeight: 900,
+                            borderRadius: "14px",
+                            borderColor: "primary.main",
+                            color: "primary.main",
+                          }}
+                        >
+                          Edit
+                        </Button>
+
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          startIcon={<DeleteIcon />}
+                          onClick={() => deleteProduct(product.id)}
+                          sx={{
+                            textTransform: "none",
+                            fontWeight: 900,
+                            borderRadius: "14px",
+                            borderColor: "#ef4444",
+                            color: "#ef4444",
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Box>
                     </Box>
                   </Box>
                 </Box>
@@ -928,7 +1161,7 @@ function ManageProducts() {
         )}
       </Paper>
 
-      {/* Add / Edit Popup */}
+      {/* Add / Edit Dialog */}
       <Dialog
         open={openDialog}
         onClose={closeDialog}
@@ -959,10 +1192,10 @@ function ManageProducts() {
         </DialogTitle>
 
         <DialogContent sx={{ pt: 2 }}>
-          <Typography color="text.secondary" sx={{ mb: 3 }}>
+          <Typography color="text.secondary" sx={{ mb: 3, lineHeight: 1.6 }}>
             {editingProduct
-              ? "Update product details. Choose new images only if you want to replace old images."
-              : "Create a new product with category, price, stock, and images."}
+              ? "Update product details. Choose new images only if you want to replace or add images."
+              : "Create a new product with category, price, stock and images."}
           </Typography>
 
           <FormControl
@@ -977,16 +1210,16 @@ function ManageProducts() {
             }}
           >
             <Select
-              displayEmpty
               value={formData.category_id}
+              displayEmpty
               onChange={(e) =>
                 handleInputChange("category_id", e.target.value)
               }
             >
               <MenuItem value="">Select Category</MenuItem>
 
-              {activeCategories.map((category) => (
-                <MenuItem key={category.id} value={String(category.id)}>
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
                   {category.name}
                 </MenuItem>
               ))}
@@ -1067,7 +1300,7 @@ function ManageProducts() {
             }}
           >
             {formData.images.length > 0
-              ? `${formData.images.length} Images Selected`
+              ? `${formData.images.length} Image(s) Selected`
               : "Choose Product Images"}
 
             <input
@@ -1075,7 +1308,9 @@ function ManageProducts() {
               multiple
               type="file"
               accept="image/*"
-              onChange={handleImagesChange}
+              onChange={(e) =>
+                handleInputChange("images", Array.from(e.target.files || []))
+              }
             />
           </Button>
         </DialogContent>

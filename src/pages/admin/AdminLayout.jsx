@@ -65,69 +65,209 @@ function AdminLayout() {
     <Box
       sx={{
         minHeight: "100vh",
+        width: "100%",
+        overflowX: "hidden",
         background:
           "linear-gradient(180deg, #f7fbff 0%, #ecfdf5 55%, #f7fbff 100%)",
+        boxSizing: "border-box",
       }}
     >
-      <Container maxWidth="lg" className="py-8">
-        <Box className="flex flex-col md:flex-row gap-6">
+      <Container
+        maxWidth="lg"
+        disableGutters
+        sx={{
+          py: {
+            xs: 3,
+            sm: 4,
+          },
+          px: {
+            xs: 2,
+            sm: 3,
+            lg: 0,
+          },
+          width: "100%",
+          maxWidth: {
+            xs: "100%",
+            lg: "1200px",
+          },
+          overflowX: "hidden",
+          boxSizing: "border-box",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: {
+              xs: "column",
+              xl: "row",
+            },
+            gap: {
+              xs: 3,
+              xl: 4,
+            },
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+            overflowX: "hidden",
+            boxSizing: "border-box",
+            alignItems: "flex-start",
+          }}
+        >
           {/* Left Sidebar */}
           <Paper
             elevation={0}
             sx={{
               width: {
                 xs: "100%",
-                md: "290px",
+                xl: "290px",
               },
-              p: 3,
+              flexShrink: 0,
+              p: {
+                xs: 2.5,
+                sm: 3,
+              },
               borderRadius: "28px",
               border: "1px solid #e5e7eb",
               backgroundColor: "white",
               height: "fit-content",
               boxShadow: "0 14px 35px rgba(0,0,0,0.06)",
+              maxWidth: "100%",
+              minWidth: 0,
+              overflow: "hidden",
+              boxSizing: "border-box",
             }}
           >
             {/* Admin info */}
-            <Box className="flex items-center gap-3 mb-6">
-              <Box className="w-12 h-12 rounded-2xl bg-[#28DF99] text-white flex items-center justify-center">
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                mb: 3,
+                minWidth: 0,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: "16px",
+                  backgroundColor: "#28DF99",
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
                 <AdminPanelSettingsIcon />
               </Box>
 
-              <Box>
-                <Typography fontWeight={900} fontSize={20}>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography
+                  fontWeight={900}
+                  sx={{
+                    fontSize: {
+                      xs: 18,
+                      sm: 20,
+                    },
+                    lineHeight: 1.25,
+                    overflowWrap: "normal",
+                    wordBreak: "normal",
+                  }}
+                >
                   Admin Panel
                 </Typography>
 
-                <Typography color="text.secondary" fontSize={13}>
+                <Typography
+                  color="text.secondary"
+                  fontSize={13}
+                  sx={{
+                    lineHeight: 1.4,
+                    overflowWrap: "anywhere",
+                  }}
+                >
                   {adminName}
                 </Typography>
               </Box>
             </Box>
 
             {/* Menu */}
-            <Box className="flex flex-col gap-2">
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: {
+                  xs: "row",
+                  xl: "column",
+                },
+                flexWrap: {
+                  xs: "wrap",
+                  xl: "nowrap",
+                },
+                gap: 1.2,
+                width: "100%",
+                maxWidth: "100%",
+                overflowX: "hidden",
+                boxSizing: "border-box",
+              }}
+            >
               {menuItems.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   className="no-underline"
+                  style={{
+                    flex: "1 1 auto",
+                    minWidth: "fit-content",
+                  }}
                 >
                   {({ isActive }) => (
                     <Box
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl"
                       sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.2,
+                        px: {
+                          xs: 1.8,
+                          sm: 2,
+                        },
+                        py: 1.4,
+                        borderRadius: "16px",
                         backgroundColor: isActive ? "#e6fdf4" : "transparent",
                         color: isActive ? "primary.main" : "text.primary",
+                        border: isActive
+                          ? "2px solid #111827"
+                          : "2px solid transparent",
                         transition: "0.2s",
+                        width: {
+                          xs: "auto",
+                          xl: "100%",
+                        },
+                        minWidth: 0,
+                        boxSizing: "border-box",
                         "&:hover": {
                           backgroundColor: "#f0fdf4",
                           color: "primary.main",
                         },
                       }}
                     >
-                      {item.icon}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {item.icon}
+                      </Box>
 
-                      <Typography fontWeight={800} fontSize={14}>
+                      <Typography
+                        fontWeight={800}
+                        fontSize={14}
+                        sx={{
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {item.name}
                       </Typography>
                     </Box>
@@ -138,7 +278,16 @@ function AdminLayout() {
           </Paper>
 
           {/* Right Content */}
-          <Box className="flex-1">
+          <Box
+            sx={{
+              flex: 1,
+              width: "100%",
+              maxWidth: "100%",
+              minWidth: 0,
+              overflowX: "hidden",
+              boxSizing: "border-box",
+            }}
+          >
             <Outlet />
           </Box>
         </Box>
