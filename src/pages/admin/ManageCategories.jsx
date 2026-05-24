@@ -1,5 +1,5 @@
 // src/pages/admin/ManageCategories.jsx
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -47,7 +47,7 @@ function ManageCategories() {
     name: "",
   });
 
-  const getCategories = async () => {
+  const getCategories = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -70,11 +70,11 @@ function ManageCategories() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
   useEffect(() => {
     getCategories();
-  }, [statusFilter]);
+  }, [getCategories]);
 
   const openAddDialog = () => {
     setEditingCategory(null);
@@ -511,6 +511,7 @@ function ManageCategories() {
               flexWrap: "wrap",
               gap: 2.5,
               width: "100%",
+              alignItems: "stretch",
             }}
           >
             {categories.map((category) => {
@@ -533,6 +534,7 @@ function ManageCategories() {
                     border: "1px solid #e5e7eb",
                     overflow: "hidden",
                     minWidth: 0,
+                    boxSizing: "border-box",
                     transition: "0.25s",
                     "&:hover": {
                       backgroundColor: "#ecfdf5",
@@ -586,21 +588,25 @@ function ManageCategories() {
                   <Box
                     sx={{
                       display: "flex",
-                      flexDirection: {
-                        xs: "column",
-                        sm: "row",
-                      },
-                      alignItems: {
-                        xs: "flex-start",
-                        sm: "flex-start",
-                      },
-                      justifyContent: "space-between",
-                      gap: 2,
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: 1.5,
                       width: "100%",
                       minWidth: 0,
                     }}
                   >
-                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Chip
+                      label={category.status}
+                      sx={{
+                        textTransform: "capitalize",
+                        fontWeight: 900,
+                        backgroundColor: statusStyle.bg,
+                        color: statusStyle.color,
+                        alignSelf: "flex-start",
+                      }}
+                    />
+
+                    <Box sx={{ minWidth: 0, width: "100%" }}>
                       <Typography
                         fontWeight={900}
                         fontSize={22}
@@ -623,21 +629,6 @@ function ManageCategories() {
                         {category.description || "No description available."}
                       </Typography>
                     </Box>
-
-                    <Chip
-                      label={category.status}
-                      sx={{
-                        textTransform: "capitalize",
-                        fontWeight: 900,
-                        backgroundColor: statusStyle.bg,
-                        color: statusStyle.color,
-                        flexShrink: 0,
-                        alignSelf: {
-                          xs: "flex-start",
-                          sm: "flex-start",
-                        },
-                      }}
-                    />
                   </Box>
 
                   {/* Status and actions */}
@@ -655,28 +646,24 @@ function ManageCategories() {
                       flexDirection: "column",
                       gap: 2,
                       width: "100%",
+                      maxWidth: "100%",
                       minWidth: 0,
+                      boxSizing: "border-box",
+                      overflow: "hidden",
                     }}
                   >
                     <Box
                       sx={{
                         display: "flex",
-                        flexDirection: {
-                          xs: "column",
-                          sm: "column",
-                          xl: "row",
-                        },
-                        alignItems: {
-                          xs: "stretch",
-                          xl: "center",
-                        },
-                        justifyContent: "space-between",
+                        flexDirection: "column",
+                        alignItems: "stretch",
                         gap: 2,
                         width: "100%",
+                        maxWidth: "100%",
                         minWidth: 0,
                       }}
                     >
-                      <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Box sx={{ minWidth: 0, width: "100%" }}>
                         <Typography fontWeight={900} fontSize={14}>
                           Change Status
                         </Typography>
@@ -697,15 +684,19 @@ function ManageCategories() {
                         size="small"
                         fullWidth
                         sx={{
-                          width: {
-                            xs: "100%",
-                            xl: "155px",
-                          },
-                          flexShrink: 0,
+                          width: "100%",
+                          maxWidth: "100%",
+                          minWidth: 0,
                           "& .MuiOutlinedInput-root": {
                             borderRadius: "14px",
                             fontWeight: 800,
                             backgroundColor: "#f7fbff",
+                            width: "100%",
+                          },
+                          "& .MuiSelect-select": {
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                           },
                         }}
                       >
@@ -730,6 +721,8 @@ function ManageCategories() {
                         },
                         gap: 1.5,
                         width: "100%",
+                        maxWidth: "100%",
+                        minWidth: 0,
                       }}
                     >
                       <Button
@@ -743,6 +736,7 @@ function ManageCategories() {
                           borderRadius: "14px",
                           borderColor: "primary.main",
                           color: "primary.main",
+                          minWidth: 0,
                         }}
                       >
                         Edit
@@ -759,6 +753,7 @@ function ManageCategories() {
                           borderRadius: "14px",
                           borderColor: "#ef4444",
                           color: "#ef4444",
+                          minWidth: 0,
                         }}
                       >
                         Delete
