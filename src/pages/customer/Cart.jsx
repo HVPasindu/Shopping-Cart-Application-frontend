@@ -1,5 +1,5 @@
 // src/pages/customer/Cart.jsx
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -30,7 +30,34 @@ function Cart() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
-  const getCart = async () => {
+  const getBackendBaseUrl = () => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+
+    return apiBaseUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+  };
+
+  const getImageUrl = (image) => {
+    const rawImageUrl =
+      image?.image_url_full ||
+      image?.image_url ||
+      image?.url ||
+      image;
+
+    if (!rawImageUrl) {
+      return null;
+    }
+
+    if (
+      String(rawImageUrl).startsWith("http://") ||
+      String(rawImageUrl).startsWith("https://")
+    ) {
+      return rawImageUrl;
+    }
+
+    return `${getBackendBaseUrl()}/${String(rawImageUrl).replace(/^\/+/, "")}`;
+  };
+
+  const getCart = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -51,11 +78,11 @@ function Cart() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     getCart();
-  }, []);
+  }, [getCart]);
 
   const updateQuantity = async (itemId, newQuantity) => {
     if (newQuantity <= 0) {
@@ -283,7 +310,7 @@ function Cart() {
         <>
           <Box className="flex flex-col gap-4">
             {items.map((item) => {
-              const imageUrl = item.main_image?.image_url_full;
+              const imageUrl = getImageUrl(item.main_image);
 
               const hasIssue =
                 item.product_status !== "active" ||
@@ -317,6 +344,9 @@ function Cart() {
                         component="img"
                         src={imageUrl}
                         alt={item.product_name}
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
                         sx={{
                           width: "100%",
                           height: "100%",
@@ -333,10 +363,17 @@ function Cart() {
                     )}
                   </Box>
 
-                  <Box className="flex-1">
+                  <Box className="flex-1 min-w-0">
                     <Box className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <Box>
-                        <Typography fontWeight={900} fontSize={21}>
+                      <Box className="min-w-0">
+                        <Typography
+                          fontWeight={900}
+                          fontSize={21}
+                          sx={{
+                            overflowWrap: "anywhere",
+                            wordBreak: "normal",
+                          }}
+                        >
                           {item.product_name}
                         </Typography>
 
@@ -346,6 +383,8 @@ function Cart() {
                             mt: 0.8,
                             fontSize: "14px",
                             lineHeight: 1.6,
+                            overflowWrap: "anywhere",
+                            wordBreak: "normal",
                           }}
                         >
                           {item.product_description ||

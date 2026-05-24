@@ -1,5 +1,5 @@
 // src/pages/customer/Orders.jsx
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -40,7 +40,34 @@ function Orders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
 
-  const getOrderSummary = async () => {
+  const getBackendBaseUrl = () => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
+
+    return apiBaseUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+  };
+
+  const getImageUrl = (image) => {
+    const rawImageUrl =
+      image?.image_url_full ||
+      image?.image_url ||
+      image?.url ||
+      image;
+
+    if (!rawImageUrl) {
+      return null;
+    }
+
+    if (
+      String(rawImageUrl).startsWith("http://") ||
+      String(rawImageUrl).startsWith("https://")
+    ) {
+      return rawImageUrl;
+    }
+
+    return `${getBackendBaseUrl()}/${String(rawImageUrl).replace(/^\/+/, "")}`;
+  };
+
+  const getOrderSummary = useCallback(async () => {
     try {
       const res = await API.get("/orders/summary");
 
@@ -56,9 +83,9 @@ function Orders() {
         error.response?.data?.message || "No active cart available."
       );
     }
-  };
+  }, []);
 
-  const getMyOrders = async () => {
+  const getMyOrders = useCallback(async () => {
     try {
       const res = await API.get("/orders/my-orders");
       setOrders(res.data.data.orders || []);
@@ -72,9 +99,9 @@ function Orders() {
         confirmButtonColor: "#28DF99",
       });
     }
-  };
+  }, []);
 
-  const loadPageData = async () => {
+  const loadPageData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -83,11 +110,11 @@ function Orders() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getOrderSummary, getMyOrders]);
 
   useEffect(() => {
     loadPageData();
-  }, []);
+  }, [loadPageData]);
 
   const confirmOrder = async () => {
     const result = await Swal.fire({
@@ -138,6 +165,7 @@ function Orders() {
     try {
       setDetailsLoading(true);
       setOpenDetails(true);
+      setSelectedOrder(null);
 
       const res = await API.get(`/orders/${orderId}`);
       setSelectedOrder(res.data.data.order);
@@ -192,8 +220,7 @@ function Orders() {
       Swal.fire({
         icon: "error",
         title: "Cancel Failed",
-        text:
-          error.response?.data?.message || "Could not cancel this order.",
+        text: error.response?.data?.message || "Could not cancel this order.",
         confirmButtonColor: "#28DF99",
       });
     } finally {
@@ -360,7 +387,10 @@ function Orders() {
             >
               <Box>
                 <ReceiptLongIcon
-                  sx={{ fontSize: 48, color: "primary.main" }}
+                  sx={{
+                    fontSize: 48,
+                    color: "primary.main",
+                  }}
                 />
 
                 <Typography fontWeight={900} className="mt-2">
@@ -376,7 +406,7 @@ function Orders() {
             <>
               <Box className="flex flex-col gap-3">
                 {summaryItems.map((item) => {
-                  const imageUrl = item.main_image?.image_url_full;
+                  const imageUrl = getImageUrl(item.main_image);
 
                   return (
                     <Box
@@ -405,6 +435,9 @@ function Orders() {
                             component="img"
                             src={imageUrl}
                             alt={item.product_name}
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
                             sx={{
                               width: "100%",
                               height: "100%",
@@ -415,16 +448,26 @@ function Orders() {
                         ) : (
                           <Box className="w-full h-full flex items-center justify-center">
                             <ReceiptLongIcon
-                              sx={{ fontSize: 38, color: "primary.main" }}
+                              sx={{
+                                fontSize: 38,
+                                color: "primary.main",
+                              }}
                             />
                           </Box>
                         )}
                       </Box>
 
-                      <Box className="flex-1">
+                      <Box className="flex-1 min-w-0">
                         <Box className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                          <Box>
-                            <Typography fontWeight={900} fontSize={18}>
+                          <Box className="min-w-0">
+                            <Typography
+                              fontWeight={900}
+                              fontSize={18}
+                              sx={{
+                                overflowWrap: "anywhere",
+                                wordBreak: "normal",
+                              }}
+                            >
                               {item.product_name}
                             </Typography>
 
@@ -450,6 +493,9 @@ function Orders() {
                             color="primary"
                             fontWeight={900}
                             fontSize={18}
+                            sx={{
+                              whiteSpace: "nowrap",
+                            }}
                           >
                             Rs. {item.subtotal}
                           </Typography>
@@ -618,8 +664,15 @@ function Orders() {
                     }}
                   >
                     <Box className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                      <Box>
-                        <Typography fontWeight={900} fontSize={18}>
+                      <Box className="min-w-0">
+                        <Typography
+                          fontWeight={900}
+                          fontSize={18}
+                          sx={{
+                            overflowWrap: "anywhere",
+                            wordBreak: "normal",
+                          }}
+                        >
                           {order.order_number}
                         </Typography>
 
