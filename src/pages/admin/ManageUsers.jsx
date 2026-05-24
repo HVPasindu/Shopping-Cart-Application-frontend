@@ -1,5 +1,5 @@
 // src/pages/admin/ManageUsers.jsx
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -13,7 +13,6 @@ import {
 } from "@mui/material";
 
 import PeopleIcon from "@mui/icons-material/People";
-import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import BadgeIcon from "@mui/icons-material/Badge";
@@ -29,7 +28,7 @@ function ManageUsers() {
   const [updatingId, setUpdatingId] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const getUsers = async () => {
+  const getUsers = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -47,11 +46,11 @@ function ManageUsers() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     getUsers();
-  }, []);
+  }, [getUsers]);
 
   const updateUserStatus = async (userId, status) => {
     const result = await Swal.fire({
@@ -269,58 +268,93 @@ function ManageUsers() {
 
       {/* Status Guide */}
       <Box
-        className="p-4 rounded-[22px] mb-6"
         sx={{
+          p: 2,
+          borderRadius: "22px",
+          mb: 3,
           backgroundColor: "#f7fbff",
           border: "1px solid #e5e7eb",
         }}
       >
-        <Typography fontWeight={900} className="mb-3">
+        <Typography fontWeight={900} sx={{ mb: 1.5 }}>
           Status Guide
         </Typography>
 
-        <Box className="flex flex-wrap gap-3 items-center">
-          <Chip
-            label="Active"
-            size="small"
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1.5,
+          }}
+        >
+          <Box
             sx={{
-              fontWeight: 900,
-              backgroundColor: "#dcfce7",
-              color: "#168a61",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1,
             }}
-          />
+          >
+            <Chip
+              label="Active"
+              size="small"
+              sx={{
+                fontWeight: 900,
+                backgroundColor: "#dcfce7",
+                color: "#168a61",
+              }}
+            />
 
-          <Typography color="text.secondary" fontSize={13}>
-            User can login and use the system
-          </Typography>
+            <Typography color="text.secondary" fontSize={13}>
+              User can login and use the system
+            </Typography>
+          </Box>
 
-          <Chip
-            label="Inactive"
-            size="small"
+          <Box
             sx={{
-              fontWeight: 900,
-              backgroundColor: "#fef3c7",
-              color: "#b45309",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1,
             }}
-          />
+          >
+            <Chip
+              label="Inactive"
+              size="small"
+              sx={{
+                fontWeight: 900,
+                backgroundColor: "#fef3c7",
+                color: "#b45309",
+              }}
+            />
 
-          <Typography color="text.secondary" fontSize={13}>
-            User account is disabled temporarily
-          </Typography>
+            <Typography color="text.secondary" fontSize={13}>
+              User account is disabled temporarily
+            </Typography>
+          </Box>
 
-          <Chip
-            label="Blocked"
-            size="small"
+          <Box
             sx={{
-              fontWeight: 900,
-              backgroundColor: "#fee2e2",
-              color: "#dc2626",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1,
             }}
-          />
+          >
+            <Chip
+              label="Blocked"
+              size="small"
+              sx={{
+                fontWeight: 900,
+                backgroundColor: "#fee2e2",
+                color: "#dc2626",
+              }}
+            />
 
-          <Typography color="text.secondary" fontSize={13}>
-            User is blocked from using the system
-          </Typography>
+            <Typography color="text.secondary" fontSize={13}>
+              User is blocked from using the system
+            </Typography>
+          </Box>
         </Box>
       </Box>
 
@@ -352,7 +386,15 @@ function ManageUsers() {
           </Box>
         </Box>
       ) : (
-        <Box className="flex flex-wrap gap-5">
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 2.5,
+            width: "100%",
+            alignItems: "stretch",
+          }}
+        >
           {filteredUsers.map((user) => {
             const statusStyle = getStatusStyle(user.status);
 
@@ -362,13 +404,18 @@ function ManageUsers() {
                 sx={{
                   width: {
                     xs: "100%",
-                    md: "calc(50% - 10px)",
+                    lg: "calc(50% - 10px)",
                   },
-                  p: 3,
+                  p: {
+                    xs: 2,
+                    sm: 3,
+                  },
                   borderRadius: "26px",
                   backgroundColor: "#f7fbff",
                   border: "1px solid #e5e7eb",
                   overflow: "hidden",
+                  minWidth: 0,
+                  boxSizing: "border-box",
                   transition: "0.25s",
                   "&:hover": {
                     backgroundColor: "#ecfdf5",
@@ -380,9 +427,44 @@ function ManageUsers() {
                   },
                 }}
               >
-                <Box className="flex flex-col gap-4">
-                  <Box className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                    <Box className="flex gap-4 min-w-0">
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    width: "100%",
+                    minWidth: 0,
+                  }}
+                >
+                  {/* User top */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1.5,
+                      width: "100%",
+                      minWidth: 0,
+                    }}
+                  >
+                    <Chip
+                      label={user.status}
+                      sx={{
+                        textTransform: "capitalize",
+                        fontWeight: 900,
+                        backgroundColor: statusStyle.bg,
+                        color: statusStyle.color,
+                        alignSelf: "flex-start",
+                      }}
+                    />
+
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 2,
+                        width: "100%",
+                        minWidth: 0,
+                      }}
+                    >
                       <Avatar
                         sx={{
                           width: 58,
@@ -396,18 +478,34 @@ function ManageUsers() {
                         {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                       </Avatar>
 
-                      <Box sx={{ minWidth: 0 }}>
+                      <Box
+                        sx={{
+                          minWidth: 0,
+                          flex: 1,
+                          overflow: "hidden",
+                        }}
+                      >
                         <Typography
                           fontWeight={900}
                           fontSize={21}
                           sx={{
-                            wordBreak: "break-word",
+                            overflowWrap: "anywhere",
+                            wordBreak: "normal",
+                            lineHeight: 1.35,
                           }}
                         >
                           {user.name}
                         </Typography>
 
-                        <Box className="flex items-start gap-2 mt-2">
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: 1,
+                            mt: 1.5,
+                            minWidth: 0,
+                          }}
+                        >
                           <EmailIcon
                             sx={{
                               fontSize: 18,
@@ -421,38 +519,92 @@ function ManageUsers() {
                             color="text.secondary"
                             fontSize={14}
                             sx={{
-                              wordBreak: "break-word",
                               overflowWrap: "anywhere",
+                              wordBreak: "normal",
+                              lineHeight: 1.5,
+                              minWidth: 0,
                             }}
                           >
                             {user.email}
                           </Typography>
                         </Box>
 
-                        <Box className="flex items-center gap-2 mt-1">
-                          <PhoneIcon sx={{ fontSize: 18, color: "#64748b" }} />
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mt: 1,
+                            minWidth: 0,
+                          }}
+                        >
+                          <PhoneIcon
+                            sx={{
+                              fontSize: 18,
+                              color: "#64748b",
+                              flexShrink: 0,
+                            }}
+                          />
 
-                          <Typography color="text.secondary" fontSize={14}>
+                          <Typography
+                            color="text.secondary"
+                            fontSize={14}
+                            sx={{
+                              overflowWrap: "anywhere",
+                              wordBreak: "normal",
+                              minWidth: 0,
+                            }}
+                          >
                             {user.phone || "No phone number"}
                           </Typography>
                         </Box>
 
-                        <Box className="flex items-center gap-2 mt-1">
-                          <BadgeIcon sx={{ fontSize: 18, color: "#64748b" }} />
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mt: 1,
+                            minWidth: 0,
+                          }}
+                        >
+                          <BadgeIcon
+                            sx={{
+                              fontSize: 18,
+                              color: "#64748b",
+                              flexShrink: 0,
+                            }}
+                          />
 
                           <Typography color="text.secondary" fontSize={14}>
                             Role: {user.role}
                           </Typography>
                         </Box>
 
-                        <Box className="flex items-center gap-2 mt-1">
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mt: 1,
+                            minWidth: 0,
+                          }}
+                        >
                           {user.is_email_verified ? (
                             <VerifiedIcon
-                              sx={{ fontSize: 18, color: "#16a66d" }}
+                              sx={{
+                                fontSize: 18,
+                                color: "#16a66d",
+                                flexShrink: 0,
+                              }}
                             />
                           ) : (
                             <BlockIcon
-                              sx={{ fontSize: 18, color: "#dc2626" }}
+                              sx={{
+                                fontSize: 18,
+                                color: "#dc2626",
+                                flexShrink: 0,
+                              }}
                             />
                           )}
 
@@ -465,63 +617,90 @@ function ManageUsers() {
                         </Box>
                       </Box>
                     </Box>
-
-                    <Chip
-                      label={user.status}
-                      sx={{
-                        textTransform: "capitalize",
-                        fontWeight: 900,
-                        backgroundColor: statusStyle.bg,
-                        color: statusStyle.color,
-                        alignSelf: {
-                          xs: "flex-start",
-                          sm: "flex-start",
-                        },
-                        flexShrink: 0,
-                      }}
-                    />
                   </Box>
 
+                  {/* Status change */}
                   <Box
-                    className="p-4 rounded-[20px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
                     sx={{
+                      p: {
+                        xs: 2,
+                        sm: 2.5,
+                      },
+                      borderRadius: "20px",
                       backgroundColor: "white",
                       border: "1px solid #e5e7eb",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                      width: "100%",
+                      maxWidth: "100%",
+                      minWidth: 0,
+                      boxSizing: "border-box",
+                      overflow: "hidden",
                     }}
                   >
-                    <Box>
-                      <Typography fontWeight={900} fontSize={14}>
-                        Change Status
-                      </Typography>
-
-                      <Typography color="text.secondary" fontSize={13}>
-                        Admin can update customer account status.
-                      </Typography>
-                    </Box>
-
-                    <FormControl
-                      size="small"
+                    <Box
                       sx={{
-                        minWidth: 150,
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "14px",
-                          fontWeight: 800,
-                          backgroundColor: "#f7fbff",
-                        },
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "stretch",
+                        gap: 2,
+                        width: "100%",
+                        maxWidth: "100%",
+                        minWidth: 0,
                       }}
                     >
-                      <Select
-                        value={user.status}
-                        disabled={updatingId === user.id}
-                        onChange={(e) =>
-                          updateUserStatus(user.id, e.target.value)
-                        }
+                      <Box sx={{ minWidth: 0, width: "100%" }}>
+                        <Typography fontWeight={900} fontSize={14}>
+                          Change Status
+                        </Typography>
+
+                        <Typography
+                          color="text.secondary"
+                          fontSize={13}
+                          sx={{
+                            lineHeight: 1.6,
+                            overflowWrap: "anywhere",
+                            wordBreak: "normal",
+                          }}
+                        >
+                          Admin can update customer account status.
+                        </Typography>
+                      </Box>
+
+                      <FormControl
+                        size="small"
+                        fullWidth
+                        sx={{
+                          width: "100%",
+                          maxWidth: "100%",
+                          minWidth: 0,
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: "14px",
+                            fontWeight: 800,
+                            backgroundColor: "#f7fbff",
+                            width: "100%",
+                          },
+                          "& .MuiSelect-select": {
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          },
+                        }}
                       >
-                        <MenuItem value="active">Active</MenuItem>
-                        <MenuItem value="inactive">Inactive</MenuItem>
-                        <MenuItem value="blocked">Blocked</MenuItem>
-                      </Select>
-                    </FormControl>
+                        <Select
+                          value={user.status}
+                          disabled={updatingId === user.id}
+                          onChange={(e) =>
+                            updateUserStatus(user.id, e.target.value)
+                          }
+                        >
+                          <MenuItem value="active">Active</MenuItem>
+                          <MenuItem value="inactive">Inactive</MenuItem>
+                          <MenuItem value="blocked">Blocked</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Box>
                   </Box>
                 </Box>
               </Box>

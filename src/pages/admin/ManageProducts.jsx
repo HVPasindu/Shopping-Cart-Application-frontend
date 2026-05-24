@@ -1,5 +1,5 @@
 // src/pages/admin/ManageProducts.jsx
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -56,7 +56,7 @@ function ManageProducts() {
     stock_quantity: "",
   });
 
-  const getProducts = async () => {
+  const getProducts = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -90,9 +90,9 @@ function ManageProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, categoryFilter]);
 
-  const getCategories = async () => {
+  const getCategories = useCallback(async () => {
     try {
       const res = await API.get("/categories/admin/all");
       setCategories(res.data.data.categories || []);
@@ -106,15 +106,15 @@ function ManageProducts() {
         confirmButtonColor: "#28DF99",
       });
     }
-  };
-
-  useEffect(() => {
-    getCategories();
   }, []);
 
   useEffect(() => {
+    getCategories();
+  }, [getCategories]);
+
+  useEffect(() => {
     getProducts();
-  }, [statusFilter, categoryFilter]);
+  }, [getProducts]);
 
   const openAddDialog = () => {
     setEditingProduct(null);
@@ -649,9 +649,18 @@ function ManageProducts() {
             </Box>
           </Box>
         ) : (
-          <Box className="flex flex-wrap gap-5">
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 2.5,
+              width: "100%",
+              alignItems: "stretch",
+            }}
+          >
             {products.map((product) => {
               const statusStyle = getStatusStyle(product.status);
+
               const mainImage =
                 product.images && product.images.length > 0
                   ? product.images[0].image_url_full
@@ -663,13 +672,18 @@ function ManageProducts() {
                   sx={{
                     width: {
                       xs: "100%",
-                      md: "calc(50% - 10px)",
+                      lg: "calc(50% - 10px)",
                     },
-                    p: 3,
+                    p: {
+                      xs: 2,
+                      sm: 3,
+                    },
                     borderRadius: "26px",
                     backgroundColor: "#f7fbff",
                     border: "1px solid #e5e7eb",
                     overflow: "hidden",
+                    minWidth: 0,
+                    boxSizing: "border-box",
                     transition: "0.25s",
                     "&:hover": {
                       backgroundColor: "#ecfdf5",
@@ -681,10 +695,14 @@ function ManageProducts() {
                     },
                   }}
                 >
+                  {/* Image */}
                   <Box
                     sx={{
                       width: "100%",
-                      height: 230,
+                      height: {
+                        xs: 200,
+                        sm: 230,
+                      },
                       borderRadius: "22px",
                       overflow: "hidden",
                       backgroundColor: "#e6fdf4",
@@ -706,18 +724,44 @@ function ManageProducts() {
                     ) : (
                       <Box className="w-full h-full flex items-center justify-center">
                         <ImageIcon
-                          sx={{ fontSize: 70, color: "primary.main" }}
+                          sx={{
+                            fontSize: 70,
+                            color: "primary.main",
+                          }}
                         />
                       </Box>
                     )}
                   </Box>
 
-                  <Box className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    <Box sx={{ minWidth: 0 }}>
+                  {/* Product info */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: 1.5,
+                      width: "100%",
+                      minWidth: 0,
+                    }}
+                  >
+                    <Chip
+                      label={product.status}
+                      sx={{
+                        textTransform: "capitalize",
+                        fontWeight: 900,
+                        backgroundColor: statusStyle.bg,
+                        color: statusStyle.color,
+                        alignSelf: "flex-start",
+                      }}
+                    />
+
+                    <Box sx={{ minWidth: 0, width: "100%" }}>
                       <Typography
                         fontWeight={900}
                         fontSize={22}
-                        sx={{ wordBreak: "break-word" }}
+                        sx={{
+                          wordBreak: "break-word",
+                        }}
                       >
                         {product.name}
                       </Typography>
@@ -746,45 +790,74 @@ function ManageProducts() {
                         {product.description || "No description available."}
                       </Typography>
                     </Box>
-
-                    <Chip
-                      label={product.status}
-                      sx={{
-                        textTransform: "capitalize",
-                        fontWeight: 900,
-                        backgroundColor: statusStyle.bg,
-                        color: statusStyle.color,
-                        flexShrink: 0,
-                      }}
-                    />
                   </Box>
 
+                  {/* Status and actions */}
                   <Box
-                    className="mt-5 p-4 rounded-[20px] flex flex-col gap-3"
                     sx={{
+                      mt: 2.5,
+                      p: {
+                        xs: 2,
+                        sm: 2.5,
+                      },
+                      borderRadius: "20px",
                       backgroundColor: "white",
                       border: "1px solid #e5e7eb",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                      width: "100%",
+                      maxWidth: "100%",
+                      minWidth: 0,
+                      boxSizing: "border-box",
+                      overflow: "hidden",
                     }}
                   >
-                    <Box className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "stretch",
+                        gap: 2,
+                        width: "100%",
+                        maxWidth: "100%",
+                        minWidth: 0,
+                      }}
+                    >
+                      <Box sx={{ minWidth: 0, width: "100%" }}>
                         <Typography fontWeight={900} fontSize={14}>
                           Change Status
                         </Typography>
 
-                        <Typography color="text.secondary" fontSize={13}>
+                        <Typography
+                          color="text.secondary"
+                          fontSize={13}
+                          sx={{
+                            lineHeight: 1.6,
+                            wordBreak: "break-word",
+                          }}
+                        >
                           Customers can only see active products.
                         </Typography>
                       </Box>
 
                       <FormControl
                         size="small"
+                        fullWidth
                         sx={{
-                          minWidth: 150,
+                          width: "100%",
+                          maxWidth: "100%",
+                          minWidth: 0,
                           "& .MuiOutlinedInput-root": {
                             borderRadius: "14px",
                             fontWeight: 800,
                             backgroundColor: "#f7fbff",
+                            width: "100%",
+                          },
+                          "& .MuiSelect-select": {
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                           },
                         }}
                       >
@@ -800,7 +873,19 @@ function ManageProducts() {
                       </FormControl>
                     </Box>
 
-                    <Box className="flex flex-col sm:flex-row gap-3">
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: {
+                          xs: "column",
+                          sm: "row",
+                        },
+                        gap: 1.5,
+                        width: "100%",
+                        maxWidth: "100%",
+                        minWidth: 0,
+                      }}
+                    >
                       <Button
                         fullWidth
                         variant="outlined"
@@ -812,6 +897,7 @@ function ManageProducts() {
                           borderRadius: "14px",
                           borderColor: "primary.main",
                           color: "primary.main",
+                          minWidth: 0,
                         }}
                       >
                         Edit
@@ -828,6 +914,7 @@ function ManageProducts() {
                           borderRadius: "14px",
                           borderColor: "#ef4444",
                           color: "#ef4444",
+                          minWidth: 0,
                         }}
                       >
                         Delete
