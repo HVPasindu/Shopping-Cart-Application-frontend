@@ -32,29 +32,24 @@ function Cart() {
 
   const getBackendBaseUrl = () => {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
-
     return apiBaseUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
   };
 
   const getImageUrl = (image) => {
     const rawImageUrl =
-      image?.image_url_full ||
-      image?.image_url ||
-      image?.url ||
-      image;
+      image?.image_url_full || image?.image_url || image?.url || image;
 
     if (!rawImageUrl) {
       return null;
     }
 
-    if (
-      String(rawImageUrl).startsWith("http://") ||
-      String(rawImageUrl).startsWith("https://")
-    ) {
-      return rawImageUrl;
+    const imageUrl = String(rawImageUrl);
+
+    if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+      return imageUrl;
     }
 
-    return `${getBackendBaseUrl()}/${String(rawImageUrl).replace(/^\/+/, "")}`;
+    return `${getBackendBaseUrl()}/${imageUrl.replace(/^\/+/, "")}`;
   };
 
   const getCart = useCallback(async () => {
@@ -225,17 +220,39 @@ function Cart() {
       elevation={0}
       sx={{
         p: {
-          xs: 3,
-          sm: 4,
+          xs: 2,
+          sm: 3,
+          md: 4,
         },
         borderRadius: "28px",
         border: "1px solid #e5e7eb",
         backgroundColor: "white",
         boxShadow: "0 14px 35px rgba(0,0,0,0.06)",
+        width: "100%",
+        maxWidth: "100%",
+        overflow: "hidden",
+        boxSizing: "border-box",
       }}
     >
-      <Box className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <Box>
+      {/* Header */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: {
+            xs: "column",
+            sm: "row",
+          },
+          alignItems: {
+            xs: "flex-start",
+            sm: "center",
+          },
+          justifyContent: "space-between",
+          gap: 2,
+          mb: 4,
+          width: "100%",
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
           <Box className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#e6fdf4] text-[#16a66d] font-bold text-sm mb-3">
             <ShoppingCartIcon fontSize="small" />
             My Cart
@@ -249,12 +266,20 @@ function Cart() {
                 sm: "36px",
               },
               lineHeight: 1.1,
+              color: "#0f172a",
             }}
           >
             Cart Items
           </Typography>
 
-          <Typography color="text.secondary" className="mt-2">
+          <Typography
+            color="text.secondary"
+            sx={{
+              mt: 1,
+              fontSize: "15px",
+              lineHeight: 1.6,
+            }}
+          >
             View and manage products added to your cart.
           </Typography>
         </Box>
@@ -273,6 +298,7 @@ function Cart() {
               py: 1.2,
               borderColor: "#ef4444",
               color: "#ef4444",
+              flexShrink: 0,
             }}
           >
             Clear Cart
@@ -297,18 +323,25 @@ function Cart() {
           <Box>
             <ShoppingCartIcon sx={{ fontSize: 60, color: "primary.main" }} />
 
-            <Typography fontWeight={900} fontSize={24} className="mt-3">
+            <Typography fontWeight={900} fontSize={24} sx={{ mt: 1.5 }}>
               Your cart is empty
             </Typography>
 
-            <Typography color="text.secondary" className="mt-2">
+            <Typography color="text.secondary" sx={{ mt: 1 }}>
               Add products to your cart and they will appear here.
             </Typography>
           </Box>
         </Box>
       ) : (
         <>
-          <Box className="flex flex-col gap-4">
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              width: "100%",
+            }}
+          >
             {items.map((item) => {
               const imageUrl = getImageUrl(item.main_image);
 
@@ -320,171 +353,262 @@ function Cart() {
               return (
                 <Box
                   key={item.cart_item_id}
-                  className="flex flex-col md:flex-row gap-4 p-4 rounded-[24px]"
                   sx={{
-                    border: "1px solid #e5e7eb",
+                    p: {
+                      xs: 2,
+                      sm: 2.5,
+                    },
+                    borderRadius: "24px",
                     backgroundColor: hasIssue ? "#fff7ed" : "#f7fbff",
+                    border: "1px solid #e5e7eb",
+                    width: "100%",
+                    boxSizing: "border-box",
+                    overflow: "hidden",
                   }}
                 >
                   <Box
                     sx={{
-                      width: {
-                        xs: "100%",
-                        md: 150,
+                      display: "flex",
+                      flexDirection: {
+                        xs: "column",
+                        md: "row",
                       },
-                      height: 130,
-                      borderRadius: "20px",
-                      overflow: "hidden",
-                      backgroundColor: "#e6fdf4",
-                      flexShrink: 0,
+                      gap: 2.5,
+                      width: "100%",
+                      minWidth: 0,
                     }}
                   >
-                    {imageUrl ? (
+                    {/* Image Frame */}
+                    <Box
+                      sx={{
+                        width: {
+                          xs: "100%",
+                          md: 240,
+                          lg: 280,
+                        },
+                        flexShrink: 0,
+                        borderRadius: "22px",
+                        border: "1px solid #d1fae5",
+                        background:
+                          "linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)",
+                        boxShadow: "0 10px 24px rgba(0,0,0,0.05)",
+                        p: 1.2,
+                        boxSizing: "border-box",
+                      }}
+                    >
                       <Box
-                        component="img"
-                        src={imageUrl}
-                        alt={item.product_name}
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                        }}
                         sx={{
                           width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
+                          height: {
+                            xs: 210,
+                            sm: 250,
+                            md: 170,
+                            lg: 190,
+                          },
+                          borderRadius: "18px",
+                          overflow: "hidden",
+                          backgroundColor: "white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
-                      />
-                    ) : (
-                      <Box className="w-full h-full flex items-center justify-center">
-                        <ShoppingCartIcon
-                          sx={{ fontSize: 50, color: "primary.main" }}
-                        />
-                      </Box>
-                    )}
-                  </Box>
-
-                  <Box className="flex-1 min-w-0">
-                    <Box className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                      <Box className="min-w-0">
-                        <Typography
-                          fontWeight={900}
-                          fontSize={21}
-                          sx={{
-                            overflowWrap: "anywhere",
-                            wordBreak: "normal",
-                          }}
-                        >
-                          {item.product_name}
-                        </Typography>
-
-                        <Typography
-                          color="text.secondary"
-                          sx={{
-                            mt: 0.8,
-                            fontSize: "14px",
-                            lineHeight: 1.6,
-                            overflowWrap: "anywhere",
-                            wordBreak: "normal",
-                          }}
-                        >
-                          {item.product_description ||
-                            "No description available."}
-                        </Typography>
-
-                        {hasIssue && (
-                          <Typography
+                      >
+                        {imageUrl ? (
+                          <Box
+                            component="img"
+                            src={imageUrl}
+                            alt={item.product_name}
                             sx={{
-                              mt: 1,
-                              color: "#ea580c",
-                              fontWeight: 800,
-                              fontSize: "14px",
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "contain",
+                              objectPosition: "center",
+                              display: "block",
                             }}
-                          >
-                            This item may not be available for order.
-                          </Typography>
+                          />
+                        ) : (
+                          <Box className="w-full h-full flex items-center justify-center">
+                            <ShoppingCartIcon
+                              sx={{
+                                fontSize: 50,
+                                color: "primary.main",
+                              }}
+                            />
+                          </Box>
                         )}
                       </Box>
-
-                      <Typography
-                        color="primary"
-                        fontWeight={900}
-                        fontSize={21}
-                        sx={{ whiteSpace: "nowrap" }}
-                      >
-                        Rs. {item.subtotal}
-                      </Typography>
                     </Box>
 
-                    <Divider sx={{ my: 2 }} />
+                    {/* Details */}
+                    <Box
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        width: "100%",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: {
+                            xs: "column",
+                            sm: "row",
+                          },
+                          alignItems: {
+                            xs: "flex-start",
+                            sm: "flex-start",
+                          },
+                          justifyContent: "space-between",
+                          gap: 2,
+                          width: "100%",
+                        }}
+                      >
+                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                          <Typography
+                            fontWeight={900}
+                            fontSize={20}
+                            sx={{
+                              lineHeight: 1.35,
+                              overflowWrap: "anywhere",
+                            }}
+                          >
+                            {item.product_name}
+                          </Typography>
 
-                    <Box className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <Box>
-                        <Typography color="text.secondary" fontSize={14}>
-                          Unit Price: Rs. {item.unit_price}
-                        </Typography>
+                          <Typography
+                            color="text.secondary"
+                            sx={{
+                              mt: 0.8,
+                              fontSize: "14px",
+                              lineHeight: 1.6,
+                              overflowWrap: "anywhere",
+                            }}
+                          >
+                            {item.product_description ||
+                              "No description available."}
+                          </Typography>
 
-                        <Typography color="text.secondary" fontSize={14}>
-                          Available Stock: {item.stock_quantity}
+                          {hasIssue && (
+                            <Typography
+                              sx={{
+                                mt: 1,
+                                color: "#ea580c",
+                                fontWeight: 800,
+                                fontSize: "14px",
+                              }}
+                            >
+                              This item may not be available for order.
+                            </Typography>
+                          )}
+                        </Box>
+
+                        <Typography
+                          color="primary"
+                          fontWeight={900}
+                          fontSize={20}
+                          sx={{
+                            whiteSpace: "nowrap",
+                            flexShrink: 0,
+                          }}
+                        >
+                          Rs. {item.subtotal}
                         </Typography>
                       </Box>
 
-                      <Box className="flex items-center gap-3">
-                        <IconButton
-                          onClick={() =>
-                            updateQuantity(
-                              item.cart_item_id,
-                              Number(item.quantity) - 1
-                            )
-                          }
-                          disabled={updating || Number(item.quantity) <= 1}
+                      <Divider sx={{ my: 2 }} />
+
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: {
+                            xs: "column",
+                            sm: "row",
+                          },
+                          alignItems: {
+                            xs: "flex-start",
+                            sm: "center",
+                          },
+                          justifyContent: "space-between",
+                          gap: 2,
+                          width: "100%",
+                        }}
+                      >
+                        <Box>
+                          <Typography color="text.secondary" fontSize={14}>
+                            Unit Price: Rs. {item.unit_price}
+                          </Typography>
+
+                          <Typography color="text.secondary" fontSize={14}>
+                            Available Stock: {item.stock_quantity}
+                          </Typography>
+                        </Box>
+
+                        <Box
                           sx={{
-                            backgroundColor: "#e6fdf4",
-                            "&:hover": {
-                              backgroundColor: "#d1fae5",
-                            },
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1.2,
+                            flexWrap: "wrap",
                           }}
                         >
-                          <RemoveIcon />
-                        </IconButton>
+                          <IconButton
+                            onClick={() =>
+                              updateQuantity(
+                                item.cart_item_id,
+                                Number(item.quantity) - 1
+                              )
+                            }
+                            disabled={updating || Number(item.quantity) <= 1}
+                            sx={{
+                              backgroundColor: "#e6fdf4",
+                              "&:hover": {
+                                backgroundColor: "#d1fae5",
+                              },
+                            }}
+                          >
+                            <RemoveIcon />
+                          </IconButton>
 
-                        <Typography fontWeight={900} fontSize={18}>
-                          {item.quantity}
-                        </Typography>
+                          <Typography fontWeight={900} fontSize={18}>
+                            {item.quantity}
+                          </Typography>
 
-                        <IconButton
-                          onClick={() =>
-                            updateQuantity(
-                              item.cart_item_id,
-                              Number(item.quantity) + 1
-                            )
-                          }
-                          disabled={
-                            updating ||
-                            Number(item.quantity) >= Number(item.stock_quantity)
-                          }
-                          sx={{
-                            backgroundColor: "#e6fdf4",
-                            "&:hover": {
-                              backgroundColor: "#d1fae5",
-                            },
-                          }}
-                        >
-                          <AddIcon />
-                        </IconButton>
+                          <IconButton
+                            onClick={() =>
+                              updateQuantity(
+                                item.cart_item_id,
+                                Number(item.quantity) + 1
+                              )
+                            }
+                            disabled={
+                              updating ||
+                              Number(item.quantity) >=
+                                Number(item.stock_quantity)
+                            }
+                            sx={{
+                              backgroundColor: "#e6fdf4",
+                              "&:hover": {
+                                backgroundColor: "#d1fae5",
+                              },
+                            }}
+                          >
+                            <AddIcon />
+                          </IconButton>
 
-                        <IconButton
-                          onClick={() => removeItem(item.cart_item_id)}
-                          disabled={updating}
-                          sx={{
-                            color: "#ef4444",
-                            backgroundColor: "#fee2e2",
-                            "&:hover": {
-                              backgroundColor: "#fecaca",
-                            },
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                          <IconButton
+                            onClick={() => removeItem(item.cart_item_id)}
+                            disabled={updating}
+                            sx={{
+                              color: "#ef4444",
+                              backgroundColor: "#fee2e2",
+                              "&:hover": {
+                                backgroundColor: "#fecaca",
+                              },
+                            }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
                       </Box>
                     </Box>
                   </Box>
@@ -493,11 +617,30 @@ function Cart() {
             })}
           </Box>
 
+          {/* Total */}
           <Box
-            className="mt-6 p-5 rounded-[24px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
             sx={{
+              mt: 3,
+              p: {
+                xs: 2,
+                sm: 3,
+              },
+              borderRadius: "24px",
               backgroundColor: "#e6fdf4",
               border: "1px solid #bbf7d0",
+              display: "flex",
+              flexDirection: {
+                xs: "column",
+                sm: "row",
+              },
+              alignItems: {
+                xs: "flex-start",
+                sm: "center",
+              },
+              justifyContent: "space-between",
+              gap: 2,
+              width: "100%",
+              boxSizing: "border-box",
             }}
           >
             <Box>
@@ -505,7 +648,7 @@ function Cart() {
                 Cart Total
               </Typography>
 
-              <Typography fontWeight={900} fontSize={30}>
+              <Typography fontWeight={900} fontSize={28}>
                 Rs. {totalAmount}
               </Typography>
             </Box>
@@ -521,6 +664,10 @@ function Cart() {
                 px: 4,
                 py: 1.3,
                 boxShadow: "none",
+                width: {
+                  xs: "100%",
+                  sm: "auto",
+                },
               }}
             >
               Continue to Order
